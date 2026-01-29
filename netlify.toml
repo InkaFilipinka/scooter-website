@@ -1,13 +1,10 @@
 [images]
   remote_images = ["https://source.unsplash.com/.*", "https://images.unsplash.com/.*", "https://ext.same-assets.com/.*", "https://ugc.same-assets.com/.*"]
-
 [build]
   command = "bun run build"
   publish = ".next"
-
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
 # Enable compression for all files
 [[headers]]
   for = "/*"
@@ -17,28 +14,23 @@
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-
 # Cache static assets aggressively
 [[headers]]
   for = "/images/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "/*.js"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "/*.webp"
   [headers.values]
