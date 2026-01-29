@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserProvider, Contract, parseUnits, formatUnits } from 'ethers';
 import { useExchangeRate, convertPHPtoUSD, formatUSDC } from '@/hooks/useExchangeRate';
+import EthereumProvider from '@walletconnect/ethereum-provider';
 
 interface CryptoPaymentModalProps {
   isOpen: boolean;
@@ -29,9 +30,12 @@ const STABLECOIN_CONTRACTS = {
 };
 
 const CHAIN_INFO = {
-  ethereum: { name: 'Ethereum', chainId: '0x1', fee: 'High (~$5-20)', speed: 'Medium', token: 'USDC' },
-  bsc: { name: 'BSC', chainId: '0x38', fee: 'Low (~$0.10)', speed: 'Fast', token: 'BUSD' },
+  ethereum: { name: 'Ethereum', chainId: '0x1', chainIdNum: 1, token: 'USDC' },
+  bsc: { name: 'BSC (BNB Chain)', chainId: '0x38', chainIdNum: 56, token: 'BUSD' },
 };
+
+// WalletConnect Project ID - get one at https://cloud.walletconnect.com
+const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'demo-project-id';
 
 export function CryptoPaymentModal({
   isOpen,
@@ -48,10 +52,11 @@ export function CryptoPaymentModal({
   const [amountUSDC, setAmountUSDC] = useState<string>('0');
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'loading' | 'chain-select' | 'wallet-select' | 'confirm' | 'processing' | 'success'>('loading');
-  const [selectedWallet, setSelectedWallet] = useState<'metamask' | 'trustwallet' | null>(null);
+  const [selectedWallet, setSelectedWallet] = useState<'metamask' | 'trustwallet' | 'walletconnect' | null>(null);
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [txHash, setTxHash] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [wcProvider, setWcProvider] = useState<EthereumProvider | null>(null);
 
   const recipientAddress = process.env.NEXT_PUBLIC_METAMASK_WALLET_ADDRESS || '';
 
@@ -168,18 +173,58 @@ export function CryptoPaymentModal({
         setSelectedWallet(null);
         setWalletAddress('');
         setTxHash('');
+        setWcProvider(null);
       }, 300); // Small delay to avoid flash
     }
   }, [isOpen]);
 
-  const connectWallet = async (walletType: 'metamask' | 'trustwallet') => {
+  const connectWallet = async (walletType: 'metamask' | 'trustwallet' | 'walletconnect') => {
     try {
       setError('');
       setSelectedWallet(walletType);
 
-      // Check if any wallet is installed
+      // WalletConnect flow
+      if (walletType === 'walletconnect') {
+        try {
+          const provider = await EthereumProvider.init({
+            projectId: WALLETCONNECT_PROJECT_ID,
+            chains: [CHAIN_INFO[selectedChain].chainIdNum],
+            optionalChains: [1, 56], // Ethereum and BSC
+            showQrModal: true,
+            metadata: {
+              name: 'Palm Riders Siargao',
+              description: 'Scooter Rental Payment',
+              url: typeof window !== 'undefined' ? window.location.origin : 'https://palmriders.com',
+              icons: ['https://palmriders.com/logo.png']
+            }
+          });
+
+          await provider.connect();
+
+          const accounts = provider.accounts;
+          if (accounts.length === 0) {
+            throw new Error('No accounts found. Please try again.');
+          }
+
+          setWcProvider(provider);
+          setWalletAddress(accounts[0]);
+          setStep('confirm');
+          return;
+        } catch (wcError) {
+          console.error('WalletConnect error:', wcError);
+          if (wcError instanceof Error && wcError.message.includes('User rejected')) {
+            setError('Connection was cancelled. Please try again.');
+          } else {
+            setError('Failed to connect via WalletConnect. Please try again.');
+          }
+          setStep('wallet-select');
+          return;
+        }
+      }
+
+      // Browser extension wallet flow (MetaMask, Trust Wallet)
       if (!window.ethereum) {
-        throw new Error('No wallet detected. Please install a crypto wallet extension.');
+        throw new Error('No wallet detected. Please install MetaMask or Trust Wallet extension, or use WalletConnect for mobile.');
       }
 
       let provider;
@@ -196,13 +241,11 @@ export function CryptoPaymentModal({
         }
 
         if (!walletProvider) {
-          // Fallback: if specific wallet not found, use window.ethereum
           walletProvider = window.ethereum;
         }
 
         provider = new BrowserProvider(walletProvider);
       } else {
-        // Single wallet installed
         provider = new BrowserProvider(window.ethereum);
       }
 
@@ -218,7 +261,6 @@ export function CryptoPaymentModal({
     } catch (err) {
       console.error('Wallet connection error:', err);
 
-      // Handle user rejection specifically
       if (err instanceof Error) {
         if (err.message.includes('user rejected') || err.message.includes('User rejected') || err.message.includes('denied')) {
           setError('You cancelled the wallet connection. Please try again.');
@@ -236,11 +278,27 @@ export function CryptoPaymentModal({
 
   const switchChain = async (chain: keyof typeof STABLECOIN_CONTRACTS) => {
     try {
+      // For WalletConnect
+      if (selectedWallet === 'walletconnect' && wcProvider) {
+        try {
+          await wcProvider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: CHAIN_INFO[chain].chainId }],
+          });
+          setSelectedChain(chain);
+          return true;
+        } catch (wcError) {
+          console.error('WalletConnect chain switch error:', wcError);
+          setError(`Please switch to ${CHAIN_INFO[chain].name} in your wallet app`);
+          return false;
+        }
+      }
+
+      // For browser extensions
       if (!window.ethereum) {
         throw new Error('Wallet is not installed');
       }
 
-      // Use selected wallet specifically
       let ethereumProvider;
       if (window.ethereum.providers?.length) {
         let walletProvider;
@@ -305,47 +363,68 @@ export function CryptoPaymentModal({
       setStep('processing');
       setError('');
 
-      if (!window.ethereum) {
-        throw new Error('MetaMask not found');
-      }
+      let provider: BrowserProvider | null = null;
+      let signer: any = null;
 
-      // IMPORTANT: Switch to correct network FIRST
-      console.log(`Switching to ${CHAIN_INFO[selectedChain].name}...`);
-      const switched = await switchChain(selectedChain);
-      if (!switched) {
-        throw new Error(`Please switch to ${CHAIN_INFO[selectedChain].name} network in MetaMask`);
-      }
-
-      // Wait a bit for network to fully switch
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Use selected wallet specifically (in case multiple wallets are installed)
-      let ethereumProvider;
-      if (window.ethereum.providers?.length) {
-        let walletProvider;
-
-        if (selectedWallet === 'metamask') {
-          walletProvider = window.ethereum.providers.find((p) => p.isMetaMask && !p.isTrust);
-        } else if (selectedWallet === 'trustwallet') {
-          walletProvider = window.ethereum.providers.find((p) => p.isTrust);
+      // WalletConnect flow
+      if (selectedWallet === 'walletconnect' && wcProvider) {
+        // Switch chain if needed
+        try {
+          await wcProvider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: CHAIN_INFO[selectedChain].chainId }],
+          });
+        } catch (wcError) {
+          setError(`Please switch to ${CHAIN_INFO[selectedChain].name} in your wallet app`);
+          setStep('confirm');
+          setIsProcessing(false);
+          return;
         }
-
-        if (!walletProvider) {
-          throw new Error(`${selectedWallet || 'Wallet'} not found`);
-        }
-        ethereumProvider = walletProvider;
+        provider = new BrowserProvider(wcProvider as any);
+        signer = await provider.getSigner();
       } else {
-        ethereumProvider = window.ethereum;
-      }
+        if (!window.ethereum) {
+          throw new Error('MetaMask not found');
+        }
 
-      const provider = new BrowserProvider(ethereumProvider);
-      const signer = await provider.getSigner();
+        // IMPORTANT: Switch to correct network FIRST
+        console.log(`Switching to ${CHAIN_INFO[selectedChain].name}...`);
+        const switched = await switchChain(selectedChain);
+        if (!switched) {
+          throw new Error(`Please switch to ${CHAIN_INFO[selectedChain].name} network in MetaMask`);
+        }
+
+        // Wait a bit for network to fully switch
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Use selected wallet specifically (in case multiple wallets are installed)
+        let ethereumProvider;
+        if (window.ethereum.providers?.length) {
+          let walletProvider;
+
+          if (selectedWallet === 'metamask') {
+            walletProvider = window.ethereum.providers.find((p) => p.isMetaMask && !p.isTrust);
+          } else if (selectedWallet === 'trustwallet') {
+            walletProvider = window.ethereum.providers.find((p) => p.isTrust);
+          }
+
+          if (!walletProvider) {
+            throw new Error(`${selectedWallet || 'Wallet'} not found`);
+          }
+          ethereumProvider = walletProvider;
+        } else {
+          ethereumProvider = window.ethereum;
+        }
+
+        provider = new BrowserProvider(ethereumProvider);
+        signer = await provider.getSigner();
+      }
 
       // Verify we're on the correct network
       const network = await provider.getNetwork();
-      const expectedChainId = BigInt(parseInt(CHAIN_INFO[selectedChain].chainId, 16));
+      const expectedChainId = BigInt(CHAIN_INFO[selectedChain].chainIdNum);
       if (network.chainId !== expectedChainId) {
-        throw new Error(`Please switch to ${CHAIN_INFO[selectedChain].name} in MetaMask and try again`);
+        throw new Error(`Please switch to ${CHAIN_INFO[selectedChain].name} in your wallet and try again`);
       }
 
       // Get stablecoin contract for selected chain
@@ -401,23 +480,42 @@ export function CryptoPaymentModal({
         );
       }
 
-      // Try to add stablecoin token to wallet for visibility
-      try {
-        console.log(`Adding ${tokenName} token to wallet...`);
-        await ethereumProvider.request({
-          method: 'wallet_watchAsset',
-          params: [{
-            type: 'ERC20',
-            options: {
-              address: tokenAddress,
-              symbol: tokenName,
-              decimals: contractDecimals,
-            },
-          }],
-        });
-        console.log(`✅ ${tokenName} token added to wallet`);
-      } catch (addTokenError) {
-        console.log(`⚠️ Could not add ${tokenName} token (user may have declined or already has it)`);
+      // Try to add stablecoin token to wallet for visibility (only for browser extensions)
+      if (selectedWallet !== 'walletconnect') {
+        try {
+          let ethereumProvider;
+          if (window.ethereum.providers?.length) {
+            let walletProvider;
+
+            if (selectedWallet === 'metamask') {
+              walletProvider = window.ethereum.providers.find((p) => p.isMetaMask && !p.isTrust);
+            } else if (selectedWallet === 'trustwallet') {
+              walletProvider = window.ethereum.providers.find((p) => p.isTrust);
+            }
+
+            if (!walletProvider) {
+              walletProvider = window.ethereum;
+            }
+            ethereumProvider = walletProvider;
+          } else {
+            ethereumProvider = window.ethereum;
+          }
+
+          await ethereumProvider.request({
+            method: 'wallet_watchAsset',
+            params: [{
+              type: 'ERC20',
+              options: {
+                address: tokenAddress,
+                symbol: tokenName,
+                decimals: contractDecimals,
+              },
+            }],
+          });
+          console.log(`✅ ${tokenName} token added to wallet`);
+        } catch (addTokenError) {
+          console.log(`⚠️ Could not add ${tokenName} token (user may have declined or already has it)`);
+        }
       }
 
       // USDC has 6 decimals
@@ -482,12 +580,12 @@ export function CryptoPaymentModal({
 
       // CRITICAL VALIDATION LAYER 5: Parse to base units (using contract decimals)
       console.log(`\nParsing "${amountUSDC}" to base units (${contractDecimals} decimals)...`);
-      const amount = parseUnits(amountUSDC, contractDecimals);
-      console.log(`Result: ${amount.toString()} base units`);
-      console.log(`Human readable: ${formatUnits(amount, contractDecimals)} USDC`);
+      const amountBaseUnits = parseUnits(amountUSDC, contractDecimals);
+      console.log(`Result: ${amountBaseUnits.toString()} base units`);
+      console.log(`Human readable: ${formatUnits(amountBaseUnits, contractDecimals)} USDC`);
 
       // CRITICAL VALIDATION LAYER 6: Verify base units
-      if (amount === BigInt(0)) {
+      if (amountBaseUnits === BigInt(0)) {
         const errorMsg = `❌ LAYER 6A FAILED: Base units = 0`;
         console.error(errorMsg);
         console.error(`Input string: "${amountUSDC}"`);
@@ -495,16 +593,16 @@ export function CryptoPaymentModal({
         throw new Error(`CRITICAL: parseUnits("${amountUSDC}", ${contractDecimals}) returned 0. Transaction blocked to prevent gas-only payment.`);
       }
 
-      if (amount <= BigInt(0)) {
-        const errorMsg = `❌ LAYER 6B FAILED: Base units <= 0: ${amount.toString()}`;
+      if (amountBaseUnits <= BigInt(0)) {
+        const errorMsg = `❌ LAYER 6B FAILED: Base units <= 0: ${amountBaseUnits.toString()}`;
         console.error(errorMsg);
-        throw new Error(`Invalid base units: ${amount.toString()}. Transaction blocked.`);
+        throw new Error(`Invalid base units: ${amountBaseUnits.toString()}. Transaction blocked.`);
       }
 
       // Verify base units match expected value (adjusted for decimals)
       const expectedMinimum = contractDecimals === 6 ? BigInt(10000) : BigInt('10000000000000000'); // 0.01 in 6 or 18 decimals
-      if (amount < expectedMinimum) {
-        const errorMsg = `❌ LAYER 6C FAILED: Base units ${amount.toString()} < minimum ${expectedMinimum.toString()}`;
+      if (amountBaseUnits < expectedMinimum) {
+        const errorMsg = `❌ LAYER 6C FAILED: Base units ${amountBaseUnits.toString()} < minimum ${expectedMinimum.toString()}`;
         console.error(errorMsg);
         throw new Error(`Amount too small in base units. Transaction blocked.`);
       }
@@ -513,9 +611,9 @@ export function CryptoPaymentModal({
       console.log('\n==========================================');
       console.log('🎉 ALL VALIDATION LAYERS PASSED!');
       console.log('==========================================');
-      console.log(`✅ Will send: ${formatUnits(amount, contractDecimals)} USDC`);
+      console.log(`✅ Will send: ${formatUnits(amountBaseUnits, contractDecimals)} USDC`);
       console.log(`✅ Equivalent to: ₱${amountPHP} PHP`);
-      console.log(`✅ Base units: ${amount.toString()}`);
+      console.log(`✅ Base units: ${amountBaseUnits.toString()}`);
       console.log(`✅ Decimals: ${contractDecimals}`);
       console.log('==========================================\n');
 
@@ -524,7 +622,7 @@ export function CryptoPaymentModal({
       const balance = await stablecoinContract.balanceOf(walletAddress);
       console.log(`Balance: ${formatUnits(balance, contractDecimals)} ${tokenName}`);
 
-      if (balance < amount) {
+      if (balance < amountBaseUnits) {
         throw new Error(`Insufficient ${tokenName} balance. You have ${formatUnits(balance, contractDecimals)} ${tokenName} but need ${amountUSDC} ${tokenName}`);
       }
 
@@ -541,14 +639,14 @@ export function CryptoPaymentModal({
       console.log('Recipient:', recipientAddress);
       console.log('Amount (string):', amountUSDC);
       console.log('Amount (parsed):', Number.parseFloat(amountUSDC));
-      console.log('Amount (BigInt base units):', amount.toString());
-      console.log('Amount (in human readable):', formatUnits(amount, contractDecimals), tokenName);
-      console.log('Expected to send:', formatUnits(amount, contractDecimals), `${tokenName} (NOT just gas)`);
+      console.log('Amount (BigInt base units):', amountBaseUnits.toString());
+      console.log('Amount (in human readable):', formatUnits(amountBaseUnits, contractDecimals), tokenName);
+      console.log('Expected to send:', formatUnits(amountBaseUnits, contractDecimals), `${tokenName} (NOT just gas)`);
       console.log('Contract decimals:', contractDecimals);
       console.log('==========================================');
 
       // CRITICAL CHECK: Verify amount is correct before sending
-      const humanReadableAmount = formatUnits(amount, contractDecimals);
+      const humanReadableAmount = formatUnits(amountBaseUnits, contractDecimals);
       if (Number.parseFloat(humanReadableAmount) < 0.01) {
         throw new Error(`CRITICAL ERROR: Amount too small (${humanReadableAmount} ${tokenName}). This would only pay gas fees. Aborting transaction.`);
       }
@@ -560,9 +658,9 @@ export function CryptoPaymentModal({
       console.log(`Function: ${tokenName}Contract.transfer(to, amount)`);
       console.log('Contract address:', tokenAddress);
       console.log('Parameter 1 (to):', recipientAddress);
-      console.log('Parameter 2 (amount):', amount);
-      console.log('  - Type:', typeof amount);
-      console.log('  - toString():', amount.toString());
+      console.log('Parameter 2 (amount):', amountBaseUnits);
+      console.log('  - Type:', typeof amountBaseUnits);
+      console.log('  - toString():', amountBaseUnits.toString());
       console.log('  - Human readable:', humanReadableAmount, tokenName);
       console.log('==========================================\n');
 
@@ -570,14 +668,14 @@ export function CryptoPaymentModal({
       console.log(`✅ All checks passed. Sending ${humanReadableAmount} ${tokenName} to ${recipientAddress}...`);
 
       // IMPORTANT: Save the amount before the call to verify it doesn't change
-      const amountBeforeCall = amount;
+      const amountBeforeCall = amountBaseUnits;
       console.log('💾 Saved amount before call:', amountBeforeCall.toString());
 
-      const tx = await stablecoinContract.transfer(recipientAddress, amount);
+      const tx = await stablecoinContract.transfer(recipientAddress, amountBaseUnits);
 
       // Verify amount didn't change
-      console.log('🔍 Amount after call:', amount.toString());
-      console.log('🔍 Are they equal?', amountBeforeCall === amount);
+      console.log('🔍 Amount after call:', amountBaseUnits.toString());
+      console.log('🔍 Are they equal?', amountBeforeCall === amountBaseUnits);
 
       setTxHash(tx.hash);
       console.log(`✅ Transaction submitted: ${tx.hash}`);
@@ -602,7 +700,7 @@ export function CryptoPaymentModal({
 
       // Provide more helpful error messages
       if (errorMessage.includes('user rejected')) {
-        errorMessage = 'Transaction was rejected in MetaMask';
+        errorMessage = 'Transaction was rejected in your wallet';
       } else if (errorMessage.includes('insufficient funds')) {
         errorMessage = 'Insufficient funds for gas fees. You need some ' + CHAIN_INFO[selectedChain].name + ' native token for gas.';
       } else if (errorMessage.includes('could not decode')) {
@@ -753,7 +851,6 @@ export function CryptoPaymentModal({
                             {CHAIN_INFO[chain].token}
                           </span>
                         </div>
-                        <div className="text-sm text-slate-600">Fee: {CHAIN_INFO[chain].fee}</div>
                       </div>
                       {selectedChain === chain && (
                         <div className="text-blue-500 text-2xl">✓</div>
@@ -803,6 +900,17 @@ export function CryptoPaymentModal({
                   <div className="flex-1">
                     <div className="font-semibold text-lg text-slate-800">Trust Wallet</div>
                     <div className="text-sm text-slate-600">Mobile & browser wallet</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => connectWallet('walletconnect')}
+                  className="w-full p-4 rounded-lg border-2 border-slate-200 hover:border-green-300 hover:bg-green-50 text-left transition-all flex items-center gap-4"
+                >
+                  <div className="text-4xl">🔗</div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-lg text-slate-800">WalletConnect</div>
+                    <div className="text-sm text-slate-600">Connect any mobile wallet (QR code)</div>
                   </div>
                 </button>
               </div>
@@ -859,10 +967,6 @@ export function CryptoPaymentModal({
                     <span className="font-semibold text-slate-800">₱{amountPHP.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Estimated Gas:</span>
-                    <span className="font-semibold text-slate-800">{CHAIN_INFO[selectedChain].fee}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-slate-600">To:</span>
                     <span className="font-mono text-xs text-slate-800">{recipientAddress.slice(0, 10)}...{recipientAddress.slice(-8)}</span>
                   </div>
@@ -910,7 +1014,7 @@ export function CryptoPaymentModal({
                 </div>
               </div>
               <h3 className="text-xl font-bold mb-2 text-slate-800">Processing Transaction...</h3>
-              <p className="text-slate-600 mb-4">Please confirm in MetaMask and wait for confirmation</p>
+              <p className="text-slate-600 mb-4">Please confirm in your wallet and wait for confirmation</p>
               {txHash && (
                 <div className="bg-blue-50 rounded-lg p-4 inline-block">
                   <div className="text-xs text-slate-600 mb-1">Transaction Hash:</div>
