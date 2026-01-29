@@ -1,0 +1,28 @@
+{
+  "name": "Palm Riders - Siargao Scooter Rentals",
+  "short_name": "Palm Riders",
+  "description": "Premium scooter rentals in Siargao del Norte. Honda Beat, Honda Click, Yamaha Fazzio with airport pickup and delivery.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#14b8a6",
+  "orientation": "portrait-primary",
+  "categories": ["travel", "transportation"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

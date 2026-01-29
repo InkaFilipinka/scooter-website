@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Maps API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #map { height: 400px; width: 100%; border: 2px solid #ccc; margin: 20px 0; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Google Maps API Test</h1>
+    <p><strong>API Key:</strong> AIzaSyCZIT46Kz-_VCOcDHIl4zq1isvp0iqUviI</p>
+
+    <div id="status" class="status loading">⏳ Loading Google Maps...</div>
+
+    <div id="map"></div>
+
+    <div id="details"></div>
+
+    <script>
+        function initMap() {
+            try {
+                const statusDiv = document.getElementById('status');
+                const detailsDiv = document.getElementById('details');
+
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '✅ <strong>SUCCESS!</strong> Google Maps API loaded successfully!';
+
+                // Create map centered on Siargao (Palm Riders location)
+                const map = new google.maps.Map(document.getElementById('map'), {
+                    center: { lat: 9.785420336695513, lng: 126.15741075767107 },
+                    zoom: 12
+                });
+
+                // Add marker for Palm Riders
+                const marker = new google.maps.Marker({
+                    position: { lat: 9.785420336695513, lng: 126.15741075767107 },
+                    map: map,
+                    title: 'Palm Riders - Blue Corner House'
+                });
+
+                detailsDiv.innerHTML = `
+                    <div class="status success">
+                        <h3>✅ Map Test Results:</h3>
+                        <ul>
+                            <li>✅ API key is valid</li>
+                            <li>✅ Maps JavaScript API is enabled</li>
+                            <li>✅ Map loaded at Siargao location</li>
+                            <li>✅ Marker placed at Palm Riders location</li>
+                            <li>✅ Ready to use in your booking form!</li>
+                        </ul>
+                        <p><strong>Conclusion:</strong> Your Google Maps integration is working perfectly!</p>
+                    </div>
+                `;
+            } catch (error) {
+                const statusDiv = document.getElementById('status');
+                const detailsDiv = document.getElementById('details');
+
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ <strong>ERROR:</strong> Failed to initialize map';
+
+                detailsDiv.innerHTML = `
+                    <div class="status error">
+                        <h3>Error Details:</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Error handler for authentication failures
+        window.gm_authFailure = function() {
+            const statusDiv = document.getElementById('status');
+            const detailsDiv = document.getElementById('details');
+
+            statusDiv.className = 'status error';
+            statusDiv.innerHTML = '❌ <strong>AUTHENTICATION FAILED</strong>';
+
+            detailsDiv.innerHTML = `
+                <div class="status error">
+                    <h3>Possible Issues:</h3>
+                    <ul>
+                        <li>Maps JavaScript API is not enabled for this key</li>
+                        <li>Billing is not set up on the Google Cloud project</li>
+                        <li>API key has domain restrictions blocking this site</li>
+                    </ul>
+                    <p><strong>Solution:</strong> Visit <a href="https://console.cloud.google.com/google/maps-apis/" target="_blank">Google Cloud Console</a> and ensure Maps JavaScript API is enabled and billing is configured.</p>
+                </div>
+            `;
+        };
+
+        // Load error handler
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('Google') || e.message.includes('map')) {
+                const statusDiv = document.getElementById('status');
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ <strong>SCRIPT ERROR:</strong> ' + e.message;
+            }
+        }, true);
+    </script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCZIT46Kz-_VCOcDHIl4zq1isvp0iqUviI&callback=initMap">
+    </script>
+</body>
+</html>

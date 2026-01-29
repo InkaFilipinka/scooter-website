@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Key Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #map { height: 500px; width: 100%; border: 2px solid #000; }
+        .info { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Testing API Key: AIzaSyCZIT46Kz-_VCOcDHIl4zq1isvp0iqUviI</h1>
+    <div id="status" class="info">Loading...</div>
+    <div id="map"></div>
+
+    <script>
+        function initMap() {
+            console.log("✅ initMap called - API loaded successfully!");
+            document.getElementById('status').className = 'info success';
+            document.getElementById('status').innerHTML = '✅ SUCCESS! API key works!';
+            
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 9.785420336695513, lng: 126.15741075767107 },
+                zoom: 12
+            });
+
+            new google.maps.Marker({
+                position: { lat: 9.785420336695513, lng: 126.15741075767107 },
+                map: map,
+                title: 'Palm Riders'
+            });
+        }
+
+        window.gm_authFailure = function() {
+            console.error("❌ Authentication failed!");
+            document.getElementById('status').className = 'info error';
+            document.getElementById('status').innerHTML = '❌ FAILED! API key has problems:<br>- Maps JavaScript API not enabled<br>- Billing not set up<br>- API key restrictions blocking request';
+        };
+
+        window.addEventListener('error', function(e) {
+            console.error("Script error:", e);
+            document.getElementById('status').className = 'info error';
+            document.getElementById('status').innerHTML = '❌ Failed to load script: ' + e.message;
+        }, true);
+    </script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCZIT46Kz-_VCOcDHIl4zq1isvp0iqUviI&callback=initMap"
+        onerror="document.getElementById('status').className='info error';document.getElementById('status').innerHTML='❌ Script failed to load';">
+    </script>
+</body>
+</html>
