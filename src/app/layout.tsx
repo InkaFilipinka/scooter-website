@@ -5,13 +5,11 @@ import { Navigation } from "@/components/navigation";
 import { LanguageProvider } from "@/contexts/language-context";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { GoogleAnalytics } from "@/components/google-analytics";
-
 const inter = Inter({
   subsets: ["latin"],
   display: 'swap',
   preload: true,
 });
-
 export const metadata: Metadata = {
   metadataBase: new URL('https://siargaoscooterrentals.com'),
   title: {
@@ -57,7 +55,6 @@ export const metadata: Metadata = {
     images: ["/images/hero-poster.webp"],
   },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{

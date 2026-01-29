@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
-
 interface ExchangeRateData {
   rate: number;
   lastUpdated: Date;
   isLoading: boolean;
   error: string | null;
 }
-
 export function useExchangeRate() {
   const [data, setData] = useState<ExchangeRateData>({
     rate: 56, // Fallback rate
@@ -14,15 +12,12 @@ export function useExchangeRate() {
     isLoading: true,
     error: null,
   });
-
   useEffect(() => {
     const fetchRate = async () => {
       try {
         setData(prev => ({ ...prev, isLoading: true, error: null }));
-
         // Try multiple free APIs in order of preference
         let rate = null;
-
         // Option 1: ExchangeRate-API (Free, no key needed for basic)
         try {
           const response = await fetch('https://open.er-api.com/v6/latest/USD');
@@ -33,7 +28,6 @@ export function useExchangeRate() {
         } catch (err) {
           console.log('ExchangeRate-API failed, trying alternative...');
         }
-
         // Option 2: CoinGecko (Backup)
         if (!rate) {
           try {
@@ -48,7 +42,6 @@ export function useExchangeRate() {
             console.log('CoinGecko failed, trying alternative...');
           }
         }
-
         // Option 3: Fallback to exchangerate.host
         if (!rate) {
           try {
@@ -61,26 +54,21 @@ export function useExchangeRate() {
             console.log('All APIs failed, using fallback rate');
           }
         }
-
         // Use fetched rate or fallback
         const finalRate = rate || 56;
-
         setData({
           rate: finalRate,
           lastUpdated: new Date(),
           isLoading: false,
           error: null,
         });
-
         // Cache the rate in localStorage
         localStorage.setItem('exchangeRate', JSON.stringify({
           rate: finalRate,
           timestamp: new Date().getTime(),
         }));
-
       } catch (error) {
         console.error('Error fetching exchange rate:', error);
-
         // Try to use cached rate
         const cached = localStorage.getItem('exchangeRate');
         if (cached) {
@@ -101,24 +89,18 @@ export function useExchangeRate() {
         }
       }
     };
-
     // Fetch on mount
     fetchRate();
-
     // Refresh every 5 minutes
     const interval = setInterval(fetchRate, 5 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, []);
-
   return data;
 }
-
 // Helper function to convert PHP to USD
 export function convertPHPtoUSD(amountPHP: number, rate: number): number {
   return amountPHP / rate;
 }
-
 // Helper function to format USDC amount
 export function formatUSDC(amount: number): string {
   return amount.toFixed(2);
