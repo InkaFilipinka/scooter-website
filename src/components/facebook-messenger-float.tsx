@@ -1,10 +1,7 @@
 "use client";
-
 import { useState, useEffect } from "react";
-
 const MESSENGER_URL = "https://m.me/61585650875574";
 const NTFY_TOPIC = "palmriders-bookings-live";
-
 // Send notification directly to ntfy.sh
 const sendNotification = async () => {
   try {
@@ -17,7 +14,6 @@ const sendNotification = async () => {
       minute: '2-digit',
       hour12: true
     });
-
     await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
       method: 'POST',
       mode: 'no-cors',
@@ -25,12 +21,9 @@ const sendNotification = async () => {
         'Content-Type': 'text/plain',
       },
       body: `💬 Messenger Contact!
-
 Someone clicked Messenger to contact you!
-
 📍 Source: Floating Button
 🕐 Time: ${time}
-
 Check your Facebook Messenger!`,
     });
     console.log('✅ Messenger click notification sent');
@@ -38,17 +31,14 @@ Check your Facebook Messenger!`,
     console.log('Notification failed:', error);
   }
 };
-
 // Handle click with delayed navigation
 const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
   e.preventDefault();
   sendNotification();
-
   setTimeout(() => {
     window.open(MESSENGER_URL, '_blank');
   }, 500);
 };
-
 // Facebook Messenger icon component
 function MessengerIcon({ className }: { className?: string }) {
   return (
@@ -62,21 +52,16 @@ function MessengerIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
 export function FacebookMessengerFloat() {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 1500);
-
     return () => clearTimeout(timer);
   }, []);
-
   if (!isVisible) return null;
-
   return (
     <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-2">
       {/* Tooltip */}
@@ -87,7 +72,6 @@ export function FacebookMessengerFloat() {
       >
         <p className="text-sm font-semibold whitespace-nowrap">Message us on Messenger!</p>
       </div>
-
       {/* Messenger Button */}
       <a
         href={MESSENGER_URL}
@@ -98,7 +82,6 @@ export function FacebookMessengerFloat() {
         aria-label="Chat with us on Facebook Messenger"
       >
         <MessengerIcon className="w-8 h-8 text-white" />
-
         {/* Pulse animation ring */}
         <span className="absolute w-14 h-14 rounded-full bg-blue-500 opacity-40 animate-ping" />
       </a>

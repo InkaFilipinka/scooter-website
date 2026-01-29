@@ -1,8 +1,6 @@
 "use client";
-
 import { Check } from "lucide-react";
 import { getLowestPrice, getAllPricingTiers } from "@/data/scooter-pricing";
-
 interface Scooter {
   id: string;
   name: string;
@@ -11,7 +9,6 @@ interface Scooter {
   features: string[];
   alt?: string;
 }
-
 function getResponsiveImage(src: string) {
   switch (src) {
     case "/images/honda-beat.webp":
@@ -36,12 +33,10 @@ function getResponsiveImage(src: string) {
       return { src };
   }
 }
-
 export function ScooterCard({ scooter }: { scooter: Scooter }) {
   const lowestPrice = getLowestPrice(scooter.id);
   const pricingTiers = getAllPricingTiers(scooter.id);
   const imgProps = getResponsiveImage(scooter.image);
-
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-teal-100 hover:border-teal-300 flex flex-col h-full">
       <div className="relative h-64 bg-white">
@@ -62,7 +57,6 @@ export function ScooterCard({ scooter }: { scooter: Scooter }) {
       <div className="p-6 relative flex flex-col flex-1">
         <div className="absolute top-0 right-4 text-2xl -mt-3">🥥</div>
         <h3 className="text-2xl font-bold mb-3 text-slate-800">{scooter.name}</h3>
-
         <div className="mb-4 p-3 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-lg border border-teal-200">
           <div className="text-xs font-semibold text-slate-700 mb-2">Daily Rates (by rental length):</div>
           <div className="space-y-1">
@@ -77,7 +71,6 @@ export function ScooterCard({ scooter }: { scooter: Scooter }) {
             ))}
           </div>
         </div>
-
         <ul className="space-y-2 mb-6 flex-1">
           {scooter.features.map((feature, index) => (
             <li key={index} className="flex items-center text-slate-600">

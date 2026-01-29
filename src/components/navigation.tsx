@@ -1,17 +1,14 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { Menu, X, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/language-context";
 import { useTheme } from "@/contexts/theme-context";
-
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -19,7 +16,6 @@ export function Navigation() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
   const navLinks = [
     { href: "/#scooters", label: t('nav.scooters') },
     { href: "/#services", label: t('nav.services') },
@@ -28,7 +24,6 @@ export function Navigation() {
     { href: "/blog", label: t('nav.blog') },
     { href: "/#book", label: t('nav.book') },
   ];
-
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -44,7 +39,6 @@ export function Navigation() {
             <span>Palm Riders</span>
             <span className="text-2xl">🛵</span>
           </Link>
-
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
@@ -66,7 +60,6 @@ export function Navigation() {
                 </Link>
               )
             ))}
-
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'tl' : 'en')}
@@ -76,7 +69,6 @@ export function Navigation() {
             >
               <span className="text-2xl">{language === 'en' ? '🇺🇸' : '🇵🇭'}</span>
             </button>
-
             {/* Dark Mode Toggle */}
             <button
               onClick={toggleTheme}
@@ -91,7 +83,6 @@ export function Navigation() {
               )}
             </button>
           </div>
-
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
             {/* Mobile Dark Mode Toggle */}
@@ -106,7 +97,6 @@ export function Navigation() {
                 <Sun className="w-5 h-5 text-yellow-400" />
               )}
             </button>
-
             {/* Mobile Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'tl' : 'en')}
@@ -115,7 +105,6 @@ export function Navigation() {
             >
               <span className="text-2xl">{language === 'en' ? '🇺🇸' : '🇵🇭'}</span>
             </button>
-
             {/* Mobile Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -127,7 +116,6 @@ export function Navigation() {
             </button>
           </div>
         </div>
-
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden py-4 border-t border-slate-200 dark:border-slate-700 bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-slate-800 dark:to-slate-700">

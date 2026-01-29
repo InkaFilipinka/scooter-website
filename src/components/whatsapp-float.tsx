@@ -1,10 +1,7 @@
 "use client";
-
 import { trackWhatsAppClick } from "./google-analytics";
-
 const WHATSAPP_URL = "https://wa.me/639457014440?text=Hi%20Palm%20Riders!%20I%27d%20like%20to%20rent%20a%20scooter";
 const NTFY_TOPIC = "palmriders-bookings-live";
-
 // Send notification directly to ntfy.sh
 const sendNotification = async () => {
   try {
@@ -17,7 +14,6 @@ const sendNotification = async () => {
       minute: '2-digit',
       hour12: true
     });
-
     await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
       method: 'POST',
       mode: 'no-cors', // Required for cross-origin
@@ -25,12 +21,9 @@ const sendNotification = async () => {
         'Content-Type': 'text/plain',
       },
       body: `💬 WhatsApp Contact!
-
 Someone clicked WhatsApp to contact you!
-
 📍 Source: Floating Button
 🕐 Time: ${time}
-
 Check your WhatsApp for their message!`,
     });
     console.log('✅ WhatsApp click notification sent');
@@ -38,20 +31,16 @@ Check your WhatsApp for their message!`,
     console.log('Notification failed:', error);
   }
 };
-
 // Handle click with delayed navigation
 const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
   e.preventDefault(); // Stop immediate navigation
-
   trackWhatsAppClick();
   sendNotification();
-
   // Delay navigation by 500ms to ensure notification is sent
   setTimeout(() => {
     window.open(WHATSAPP_URL, '_blank');
   }, 500);
 };
-
 export function WhatsAppFloat() {
   return (
     <a
