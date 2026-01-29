@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, parseUnits, formatUnits } from 'ethers';
+import { BrowserProvider, Contract, parseUnits, formatUnits, JsonRpcSigner, Eip1193Provider } from 'ethers';
 import { useExchangeRate, convertPHPtoUSD, formatUSDC } from '@/hooks/useExchangeRate';
 import EthereumProvider from '@walletconnect/ethereum-provider';
 interface CryptoPaymentModalProps {
@@ -312,7 +312,7 @@ export function CryptoPaymentModal({
       setStep('processing');
       setError('');
       let provider: BrowserProvider | null = null;
-      let signer: any = null;
+      let signer: JsonRpcSigner | null = null;
       // WalletConnect flow
       if (selectedWallet === 'walletconnect' && wcProvider) {
         // Switch chain if needed
@@ -327,7 +327,7 @@ export function CryptoPaymentModal({
           setIsProcessing(false);
           return;
         }
-        provider = new BrowserProvider(wcProvider as any);
+        provider = new BrowserProvider(wcProvider as Eip1193Provider);
         signer = await provider.getSigner();
       } else {
         if (!window.ethereum) {
