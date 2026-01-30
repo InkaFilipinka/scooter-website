@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { BrowserProvider, Contract, parseUnits, formatUnits } from 'ethers';
+import { BrowserProvider, Contract, parseUnits, formatUnits, JsonRpcSigner, Eip1193Provider } from 'ethers';
 import { useExchangeRate, convertPHPtoUSD, formatUSDC } from '@/hooks/useExchangeRate';
 import EthereumProvider from '@walletconnect/ethereum-provider';
 
@@ -364,7 +364,7 @@ export function CryptoPaymentModal({
       setError('');
 
       let provider: BrowserProvider | null = null;
-      let signer: any = null;
+      let signer: JsonRpcSigner | null = null;
 
       // WalletConnect flow
       if (selectedWallet === 'walletconnect' && wcProvider) {
@@ -380,7 +380,7 @@ export function CryptoPaymentModal({
           setIsProcessing(false);
           return;
         }
-        provider = new BrowserProvider(wcProvider as any);
+        provider = new BrowserProvider(wcProvider as Eip1193Provider);
         signer = await provider.getSigner();
       } else {
         if (!window.ethereum) {
@@ -481,9 +481,9 @@ export function CryptoPaymentModal({
       }
 
       // Try to add stablecoin token to wallet for visibility (only for browser extensions)
-      if (selectedWallet !== 'walletconnect') {
+      if (selectedWallet !== 'walletconnect' && window.ethereum) {
         try {
-          let ethereumProvider;
+          let ethereumProvider = window.ethereum;
           if (window.ethereum.providers?.length) {
             let walletProvider;
 
@@ -493,12 +493,9 @@ export function CryptoPaymentModal({
               walletProvider = window.ethereum.providers.find((p) => p.isTrust);
             }
 
-            if (!walletProvider) {
-              walletProvider = window.ethereum;
+            if (walletProvider) {
+              ethereumProvider = walletProvider;
             }
-            ethereumProvider = walletProvider;
-          } else {
-            ethereumProvider = window.ethereum;
           }
 
           await ethereumProvider.request({
@@ -739,6 +736,13 @@ export function CryptoPaymentModal({
               ×
             </button>
           </div>
+          {/* Info Banner */}
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+            <div className="flex items-center gap-2 text-amber-800">
+              <span className="text-lg">ℹ️</span>
+              <span className="text-sm font-medium">Wallet DApp or Chrome extension only</span>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
@@ -903,6 +907,7 @@ export function CryptoPaymentModal({
                   </div>
                 </button>
 
+                {/* WalletConnect option - hidden for now
                 <button
                   onClick={() => connectWallet('walletconnect')}
                   className="w-full p-4 rounded-lg border-2 border-slate-200 hover:border-green-300 hover:bg-green-50 text-left transition-all flex items-center gap-4"
@@ -913,6 +918,7 @@ export function CryptoPaymentModal({
                     <div className="text-sm text-slate-600">Connect any mobile wallet (QR code)</div>
                   </div>
                 </button>
+                */}
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
