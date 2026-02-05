@@ -18,6 +18,12 @@ export const metadata: Metadata = {
     default: "Scooter Rental in Siargao | General Luna, Siargao del Norte",
     template: "%s | Scooter Rental Siargao"
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/favicon.svg',
+  },
   description:
     "Affordable scooter rental in General Luna, Siargao del Norte. Daily and weekly motorbike rentals with free helmets, airport pickup, and island-wide delivery. Book now.",
   keywords: [
@@ -66,6 +72,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
       <head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="preload" as="image" href="/images/hero-poster.webp" />
       </head>
       <body className={inter.className}>
