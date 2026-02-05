@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="16" fill="#16a34a"/>
+
+  <!-- Scooter silhouette - side view -->
+  <g fill="white">
+    <!-- Front wheel -->
+    <circle cx="23" cy="22" r="3.5" stroke="white" stroke-width="1.5" fill="none"/>
+    <circle cx="23" cy="22" r="1" fill="white"/>
+
+    <!-- Back wheel -->
+    <circle cx="9" cy="22" r="3.5" stroke="white" stroke-width="1.5" fill="none"/>
+    <circle cx="9" cy="22" r="1" fill="white"/>
+
+    <!-- Scooter body -->
+    <path d="M7 20 L9 16 L18 16 L20 14 L22 14 L23 16 L24 18 L23 20" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Seat -->
+    <path d="M10 16 L10 14 L15 14 L15 16" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Handlebar -->
+    <path d="M22 14 L22 10 M20 10 L24 10" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+    <!-- Headlight -->
+    <circle cx="24" cy="14" r="1.5" fill="white"/>
+
+    <!-- Floor board -->
+    <path d="M11 20 L21 20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>
