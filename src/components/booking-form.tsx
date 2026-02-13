@@ -233,23 +233,38 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
         return 'pending';
 
       } else if (formData.paymentMethod === 'credit-card') {
-        // Use Stripe for Credit Cards
-        const response = await fetch('/api/create-payment-intent', {
+        // Use Stripe Checkout - redirect to Stripe's hosted payment page
+        const scooter = scooters.find((s) => s.id === formData.scooter);
+        const scooterName = scooter?.name || "Scooter";
+        const days = getRentalDays();
+        const startDate = new Date(formData.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const endDate = new Date(formData.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        const response = await fetch('/api/create-checkout-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(paymentData),
+          body: JSON.stringify({
+            ...paymentData,
+            scooterName,
+            startDate,
+            endDate,
+            days,
+          }),
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Payment failed');
+          throw new Error(data.error || 'Failed to create checkout session');
         }
 
-        // For now, we'll show a success message
-        // In production, you'd integrate Stripe Elements for card input
-        alert(`Payment intent created! Client Secret: ${data.clientSecret?.slice(0, 20)}...`);
-        return true;
+        // Redirect to Stripe Checkout
+        if (data.url) {
+          window.location.href = data.url;
+          return 'redirect'; // Special value to indicate redirect in progress
+        } else {
+          throw new Error('No checkout URL received from Stripe');
+        }
       }
 
       return false;
@@ -342,6 +357,12 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     // If crypto, wait for modal to complete payment
     if (formData.paymentMethod === 'crypto') {
       // Modal will handle payment, so don't proceed yet
+      return;
+    }
+
+    // If credit card, user is being redirected to Stripe Checkout
+    if (paymentResult === 'redirect') {
+      // Stripe Checkout will handle payment, don't proceed
       return;
     }
 
