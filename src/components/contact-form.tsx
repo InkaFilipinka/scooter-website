@@ -12,8 +12,8 @@ interface ContactFormData {
   message: string;
 }
 
-// Send notification directly to ntfy.sh
-const sendDirectNotification = async (formData: ContactFormData) => {
+// Send notification via server-side API (works on all browsers)
+const sendNotificationViaAPI = async (formData: ContactFormData) => {
   try {
     const time = new Date().toLocaleString('en-PH', {
       timeZone: 'Asia/Manila',
@@ -39,17 +39,45 @@ ${formData.message}
 
 Reply via email or WhatsApp!`;
 
+    // Try server-side API first (most reliable)
+    const response = await fetch('/api/contact-form', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...formData,
+        message: formData.message,
+      }),
+    });
+
+    if (response.ok) {
+      console.log('✅ Contact form notification sent via API');
+      return true;
+    }
+
+    // Fallback: try direct ntfy.sh (some browsers may block this)
+    console.log('API failed, trying direct ntfy.sh...');
     await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
       body: message,
     });
 
-    console.log('✅ Contact form notification sent');
+    console.log('✅ Contact form notification sent via direct ntfy.sh');
     return true;
   } catch (error) {
-    console.log('Notification failed:', error);
+    console.error('Notification failed:', error);
+
+    // Last resort: try with no-cors (fire and forget)
+    try {
+      const time = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+      await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: `📧 Contact: ${formData.name} (${formData.email}) - ${formData.message.substring(0, 100)}... [${time}]`,
+      });
+    } catch (e) {
+      console.error('All notification methods failed:', e);
+    }
+
     return false;
   }
 };
@@ -94,8 +122,8 @@ export function ContactForm() {
     }
 
     try {
-      // Send notification directly to ntfy.sh
-      await sendDirectNotification(formData);
+      // Send notification via server-side API
+      await sendNotificationViaAPI(formData);
 
       setIsSubmitted(true);
       setFormData({ name: "", email: "", phone: "", message: "" });
