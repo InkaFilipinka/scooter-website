@@ -1,8 +1,48 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import emailjs from '@emailjs/browser';
+
+const NTFY_TOPIC = "palmriders-bookings-live";
+
+interface BookingData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  scooter: string;
+  startDate: string;
+  endDate: string;
+  pickupTime: number;
+  delivery: string;
+  distance: string;
+  deliveryLocation: string;
+  insurance: string;
+  surfRack: string;
+  paymentOption: string;
+  paymentMethod: string;
+  addOns: string[];
+  total: number;
+  status: string;
+  timestamp: string;
+}
+
+// Format time from 24h number to display string
+const formatTime = (hour: number): string => {
+  if (hour === 0) return "12:00 AM";
+  if (hour === 12) return "12:00 PM";
+  if (hour > 12) return `${hour - 12}:00 PM`;
+  return `${hour}:00 AM`;
+};
+
+// Get insurance label
+const getInsuranceLabel = (insurance: string): string => {
+  if (insurance === "full") return "Full Coverage";
+  if (insurance === "limited") return "Limited Coverage";
+  return "No Insurance";
+};
 
 function BookingSuccessContent() {
   const searchParams = useSearchParams();
@@ -10,46 +50,48 @@ function BookingSuccessContent() {
   const bookingId = searchParams.get("booking_id");
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [booking, setBooking] = useState<BookingData | null>(null);
+  const notificationsSentRef = useRef(false);
 
   useEffect(() => {
-    // Verify the payment was successful
-    const verifyPayment = async () => {
-      if (!sessionId) {
+    // Verify the payment and send notifications
+    const verifyPaymentAndNotify = async () => {
+      if (!sessionId || !bookingId) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Prevent duplicate notifications
+      if (notificationsSentRef.current) {
         setIsLoading(false);
         return;
       }
 
       try {
-        // In production, you would verify the session with Stripe
-        // For now, we'll assume success if we have a session ID
-        setIsVerified(true);
+        // Get booking from localStorage
+        const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+        const foundBooking = bookings.find((b: BookingData) => b.id === bookingId);
 
-        // Update booking status in localStorage
-        if (bookingId) {
-          const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-          const updatedBookings = bookings.map((booking: { id: string; status?: string }) => {
-            if (booking.id === bookingId) {
-              return { ...booking, status: "confirmed", paymentStatus: "paid" };
+        if (foundBooking) {
+          setBooking(foundBooking);
+
+          // Update booking status
+          const updatedBookings = bookings.map((b: BookingData) => {
+            if (b.id === bookingId) {
+              return { ...b, status: "confirmed", paymentStatus: "paid" };
             }
-            return booking;
+            return b;
           });
           localStorage.setItem("bookings", JSON.stringify(updatedBookings));
+
+          // Mark as sent to prevent duplicates
+          notificationsSentRef.current = true;
+
+          // Send full notifications
+          await sendNotifications(foundBooking);
         }
 
-        // Send notification to business owner
-        try {
-          await fetch("/api/send-notification", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              title: "Payment Received!",
-              message: `Booking ${bookingId} - Credit card payment confirmed via Stripe`,
-              tags: "credit_card,moneybag",
-            }),
-          });
-        } catch (notifyError) {
-          console.error("Failed to send notification:", notifyError);
-        }
+        setIsVerified(true);
       } catch (error) {
         console.error("Payment verification error:", error);
       } finally {
@@ -57,8 +99,124 @@ function BookingSuccessContent() {
       }
     };
 
-    verifyPayment();
+    verifyPaymentAndNotify();
   }, [sessionId, bookingId]);
+
+  const sendNotifications = async (bookingData: BookingData) => {
+    // EmailJS Configuration
+    const SERVICE_ID = 'service_64m9p4r';
+    const TEMPLATE_ID_CUSTOMER = 'template_eab09xr';
+    const TEMPLATE_ID_BUSINESS = 'template_7nltdt4';
+    const PUBLIC_KEY = 'hwMh8cnLQ3tvlI9QI';
+
+    // Get scooter name (simplified - you might want to import scooter data)
+    const scooterNames: Record<string, string> = {
+      'honda-beat': 'Honda Beat',
+      'honda-click': 'Honda Click',
+      'yamaha-fazzio': 'Yamaha Fazzio'
+    };
+    const scooterName = scooterNames[bookingData.scooter] || bookingData.scooter;
+
+    // Format dates
+    const startDate = new Date(bookingData.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const endDate = new Date(bookingData.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    // Calculate rental days
+    const days = Math.ceil((new Date(bookingData.endDate).getTime() - new Date(bookingData.startDate).getTime()) / (1000 * 60 * 60 * 24));
+
+    // Build delivery info
+    let deliveryInfo = "Pickup at store";
+    if (bookingData.delivery === "yes") {
+      deliveryInfo = `Yes - ${bookingData.distance}km away`;
+      if (bookingData.deliveryLocation) {
+        deliveryInfo += `\nLocation: ${bookingData.deliveryLocation}`;
+      }
+    }
+
+    // Calculate insurance cost
+    let insuranceCost = 0;
+    if (bookingData.insurance === "full") insuranceCost = 100 * days;
+    else if (bookingData.insurance === "limited") insuranceCost = 50 * days;
+
+    // Build add-ons list (simplified)
+    const addOnsList = bookingData.addOns?.length > 0 ? bookingData.addOns.join(', ') : "None";
+
+    // 1. Send ntfy.sh notification with full booking details
+    try {
+      const notificationMessage = `🛵 NEW BOOKING - PALM RIDERS 🌴
+💳 PAID VIA STRIPE (Credit Card)
+
+📋 Booking ID: ${bookingData.id}
+
+👤 CUSTOMER INFO
+Name: ${bookingData.name}
+Email: ${bookingData.email}
+Phone: ${bookingData.phone}
+
+🛵 RENTAL DETAILS
+Scooter: ${scooterName}
+Start: ${startDate}
+End: ${endDate}
+Days: ${days}
+Pickup Time: ${formatTime(bookingData.pickupTime)}
+Delivery: ${bookingData.delivery === "yes" ? `Yes (${bookingData.distance}km away)` : "Pickup at store"}
+Insurance: ${getInsuranceLabel(bookingData.insurance)} (₱${insuranceCost})
+Surf Rack: ${bookingData.surfRack === "yes" ? "Yes (FREE)" : "No"}
+Add-ons: ${addOnsList}
+
+💰 PAYMENT
+Method: Credit Card (Stripe)
+Status: PAID ✅
+Total: ₱${bookingData.total}
+
+⚡ Contact customer to confirm pickup!`;
+
+      await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: notificationMessage,
+      });
+
+      console.log('✅ Booking notification sent to ntfy.sh!');
+    } catch (error) {
+      console.error('❌ Error sending ntfy notification:', error);
+    }
+
+    // 2. Send EmailJS notifications
+    try {
+      const emailData = {
+        booking_id: bookingData.id,
+        customer_name: bookingData.name,
+        customer_email: bookingData.email,
+        customer_phone: bookingData.phone,
+        scooter_name: scooterName,
+        start_date: startDate,
+        end_date: endDate,
+        pickup_time: formatTime(bookingData.pickupTime),
+        delivery: deliveryInfo,
+        insurance: `${getInsuranceLabel(bookingData.insurance)} - ₱${insuranceCost}`,
+        surf_rack: bookingData.surfRack === "yes" ? "Yes (FREE)" : "No",
+        add_ons: addOnsList,
+        payment_option: "Pay in Full",
+        payment_method: "Credit Card (Stripe)",
+        amount_to_pay: bookingData.total,
+        total_cost: bookingData.total,
+        timestamp: new Date().toLocaleString(),
+        business_email: 'contact@siargaoscooterrentals.com',
+      };
+
+      // Send to business owner
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID_BUSINESS, emailData, PUBLIC_KEY);
+      console.log('✅ Business email sent!');
+
+      // Send to customer
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID_CUSTOMER, emailData, PUBLIC_KEY);
+      console.log('✅ Customer confirmation email sent!');
+    } catch (error) {
+      console.error('❌ Failed to send emails:', error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -107,6 +265,25 @@ function BookingSuccessContent() {
             <p className="text-lg font-mono font-bold text-slate-800 dark:text-white">
               {bookingId}
             </p>
+          </div>
+        )}
+
+        {/* Booking Details Summary */}
+        {booking && (
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-6 text-left">
+            <h3 className="font-semibold text-green-800 dark:text-green-300 mb-3">
+              Booking Summary
+            </h3>
+            <div className="space-y-2 text-sm text-green-700 dark:text-green-400">
+              <div className="flex justify-between">
+                <span>Scooter:</span>
+                <span className="font-medium">{booking.scooter}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total Paid:</span>
+                <span className="font-bold">₱{booking.total}</span>
+              </div>
+            </div>
           </div>
         )}
 
