@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import emailjs from '@emailjs/browser';
+import { addOns } from '@/data/add-ons';
 
 const NTFY_TOPIC = "palmriders-bookings-live";
 
@@ -136,8 +137,18 @@ function BookingSuccessContent() {
     if (bookingData.insurance === "full") insuranceCost = 100 * days;
     else if (bookingData.insurance === "limited") insuranceCost = 50 * days;
 
-    // Build add-ons list (simplified)
-    const addOnsList = bookingData.addOns?.length > 0 ? bookingData.addOns.join(', ') : "None";
+    // Build add-ons list: resolve IDs to names and prices
+    const addOnsList = (bookingData.addOns?.length ?? 0) > 0
+      ? bookingData.addOns!
+          .map((id) => {
+            const addOn = addOns.find((a) => a.id === id);
+            if (!addOn) return '';
+            const price = addOn.perDay ? addOn.price * days : addOn.price;
+            return `${addOn.icon} ${addOn.name}${price > 0 ? ` - ₱${price}` : ' (FREE)'}`;
+          })
+          .filter(Boolean)
+          .join(', ')
+      : 'None';
 
     // 1. Send ntfy.sh notification with full booking details
     try {

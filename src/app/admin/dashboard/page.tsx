@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
+import { addOns } from "@/data/add-ons";
 
 interface Booking {
   id: string;
@@ -38,6 +39,7 @@ interface Booking {
   total: number;
   status: "pending" | "confirmed" | "completed" | "cancelled";
   timestamp: string;
+  addOns?: string[];
 }
 
 interface PaymentLink {
@@ -501,8 +503,18 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-2 text-slate-600">
                         <CreditCard className="w-4 h-4" />
-                        <span className="text-sm capitalize">{booking.paymentMethod.replace('-', ' ')}</span>
+                        <span className="text-sm capitalize">{booking.paymentMethod?.replace?.(/-/g, ' ') ?? '—'}</span>
                       </div>
+                      {booking.addOns && booking.addOns.length > 0 && (
+                        <div className="flex items-start gap-2 text-slate-600 md:col-span-2 lg:col-span-3">
+                          <span className="text-sm font-medium shrink-0">Add-ons:</span>
+                          <span className="text-sm">
+                            {booking.addOns
+                              .map((id) => addOns.find((a) => a.id === id)?.name ?? id)
+                              .join(', ')}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {booking.delivery === "yes" && (
