@@ -88,6 +88,37 @@ function BookingSuccessContent() {
 
           notificationsSentRef.current = true;
           await sendNotifications(foundBooking);
+        } else if (bookingId.startsWith("PAY-")) {
+          // Payment link (admin-generated) paid via Stripe
+          const linkRes = await fetch(`/api/payment-links?id=${encodeURIComponent(bookingId)}`);
+          const linkData = await linkRes.json();
+          const paymentLink = linkData.paymentLink;
+          if (paymentLink) {
+            await fetch("/api/payment-links", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: bookingId,
+                status: "paid",
+                paymentMethod: "card",
+              }),
+            });
+            notificationsSentRef.current = true;
+            const msg = `💰 PAYMENT LINK PAID (Card)
+
+📋 Link ID: ${paymentLink.id}
+💵 Amount: ₱${paymentLink.amount.toLocaleString()}
+📝 ${paymentLink.description || "N/A"}
+👤 ${paymentLink.customerName || "—"} | ${paymentLink.customerEmail || "—"}
+🕐 ${new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila" })}
+✅ Stripe payment successful.`;
+            await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "text/plain" },
+              body: msg,
+            });
+          }
         }
 
         setIsVerified(true);

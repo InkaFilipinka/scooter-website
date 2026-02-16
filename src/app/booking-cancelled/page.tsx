@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+
+const NTFY_TOPIC = "palmriders-bookings-live";
 
 function BookingCancelledContent() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get("booking_id");
+  const notifiedRef = useRef(false);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -15,6 +18,22 @@ function BookingCancelledContent() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: bookingId, status: "cancelled" }),
     }).catch((err) => console.error("Failed to update booking:", err));
+
+    if (!notifiedRef.current) {
+      notifiedRef.current = true;
+      const message = `⚠️ PAYMENT CANCELLED
+
+📋 Booking/Link ID: ${bookingId}
+🕐 ${new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila" })}
+
+Customer cancelled checkout.`;
+      fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: message,
+      }).catch((err) => console.error("Failed to send cancelled notification:", err));
+    }
   }, [bookingId]);
 
   return (

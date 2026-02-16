@@ -2,11 +2,14 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, Suspense } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
+
+const NTFY_TOPIC = "palmriders-bookings-live";
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking');
+  const notifiedRef = useRef(false);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -19,6 +22,22 @@ function PaymentSuccessContent() {
         paidAt: new Date().toISOString(),
       }),
     }).catch((err) => console.error('Failed to update booking status:', err));
+
+    if (!notifiedRef.current) {
+      notifiedRef.current = true;
+      const message = `✅ BOOKING PAYMENT RECEIVED
+
+📋 Booking ID: ${bookingId}
+🕐 ${new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila" })}
+
+Payment confirmed.`;
+      fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: message,
+      }).catch((err) => console.error("Failed to send payment-success notification:", err));
+    }
   }, [bookingId]);
 
   return (

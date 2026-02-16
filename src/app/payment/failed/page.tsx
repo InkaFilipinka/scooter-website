@@ -2,11 +2,29 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { useEffect, Suspense } from 'react';
+
+const NTFY_TOPIC = "palmriders-bookings-live";
 
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking');
+
+  useEffect(() => {
+    if (!bookingId) return;
+    const message = `❌ PAYMENT FAILED
+
+📋 Booking/Link ID: ${bookingId}
+🕐 ${new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila" })}
+
+Customer was not charged. Follow up if needed.`;
+    fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: message,
+    }).catch((err) => console.error("Failed to send payment-failed notification:", err));
+  }, [bookingId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center p-4">

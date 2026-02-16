@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapPicker } from "./map-picker";
 import { CryptoPaymentModal } from "./crypto-payment-modal";
 import { AddOnsModal } from "./add-ons-modal";
@@ -34,7 +34,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     scooter: "",
     startDate: "",
     endDate: "",
-    pickupTime: 10, // Default 10am (range: 8-22 for 8am-10pm)
+    pickupTime: 13, // Default 1pm (range: 8-22 for 8am-10pm)
     insurance: "full", // full, limited, none
     delivery: "no",
     distance: "",
@@ -58,6 +58,15 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
   const [pendingSubmit, setPendingSubmit] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
 
+  const sectionContactRef = useRef<HTMLDivElement>(null);
+  const sectionDatesRef = useRef<HTMLDivElement>(null);
+  const sectionPaymentRef = useRef<HTMLDivElement>(null);
+  const formTopRef = useRef<HTMLFormElement>(null);
+
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement | HTMLFormElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   // Close success modal and reset form
   const handleCloseSuccessModal = () => {
     setSubmitted(false);
@@ -68,7 +77,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       scooter: "",
       startDate: "",
       endDate: "",
-      pickupTime: 10,
+      pickupTime: 13,
       insurance: "full",
       delivery: "no",
       distance: "",
@@ -291,12 +300,26 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     // Validate required fields
     if (!formData.name || !formData.email || !formData.phone) {
       alert("Please fill in all required fields: Name, Email, and Phone Number");
+      scrollToSection(sectionContactRef);
+      return;
+    }
+
+    if (!formData.scooter) {
+      alert("Please select a scooter model.");
+      scrollToSection(sectionContactRef);
       return;
     }
 
     // Validate date range
     if (dateError) {
       alert(dateError);
+      scrollToSection(sectionDatesRef);
+      return;
+    }
+
+    if (!formData.startDate || !formData.endDate) {
+      alert("Please select start and end dates.");
+      scrollToSection(sectionDatesRef);
       return;
     }
 
@@ -320,6 +343,12 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     if (!pendingSubmit) return;
     setPendingSubmit(false);
 
+    if (formData.paymentOption !== "pickup" && !formData.paymentMethod) {
+      alert("Please select a payment method.");
+      scrollToSection(sectionPaymentRef);
+      return;
+    }
+
     // Create booking object
     const booking = {
       id: `BK-${Date.now()}`,
@@ -339,6 +368,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     if (!createRes.ok) {
       const err = await createRes.json().catch(() => ({}));
       alert(err.error || "Failed to save booking. Please try again.");
+      scrollToSection(formTopRef);
       return;
     }
 
@@ -387,6 +417,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
         body: JSON.stringify({ id: booking.id, status: "cancelled" }),
       });
       alert(`Payment failed: ${paymentError}`);
+      scrollToSection(sectionPaymentRef);
       return;
     }
 
@@ -688,7 +719,7 @@ Total Cost: ₱${calculateTotal()}
           </div>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
+      <form ref={formTopRef} onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
       <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
         <div className="text-sm font-semibold mb-2 dark:text-slate-700">We Accept</div>
         <div className="flex flex-wrap gap-3 items-center text-sm text-slate-600 dark:text-slate-700">
@@ -728,7 +759,7 @@ Total Cost: ₱${calculateTotal()}
           + FREE customer pick up or deliver to our shop in General Luna area!
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div ref={sectionContactRef} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <label htmlFor="name" className="block text-sm font-semibold mb-2 dark:text-slate-700">
             Full Name
@@ -805,7 +836,7 @@ Total Cost: ₱${calculateTotal()}
           </select>
         </div>
 
-        <div>
+        <div ref={sectionDatesRef}>
           <label htmlFor="startDate" className="block text-sm font-semibold mb-2 dark:text-slate-700">
             Start Date
           </label>
@@ -1216,7 +1247,7 @@ Total Cost: ₱${calculateTotal()}
 
       {/* Payment Method - Only show if paying online */}
       {formData.paymentOption !== "pickup" && (
-        <div className="mb-6">
+        <div ref={sectionPaymentRef} className="mb-6">
           <label htmlFor="paymentMethod" className="block text-sm font-semibold mb-2 dark:text-slate-700">
             Payment Method
           </label>
@@ -1231,7 +1262,6 @@ Total Cost: ₱${calculateTotal()}
             <option value="">Select payment method</option>
             <option value="credit-card">Credit Card</option>
             <option value="crypto">Cryptocurrency</option>
-            <option value="gcash">GCash</option>
           </select>
         </div>
       )}
