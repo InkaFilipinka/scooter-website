@@ -20,6 +20,7 @@ import {
   Trash2,
   ExternalLink,
   Loader2,
+  Printer,
 } from "lucide-react";
 import { addOns } from "@/data/add-ons";
 
@@ -460,6 +461,15 @@ export default function AdminDashboard() {
                           Cancel Booking
                         </button>
                       )}
+                      <a
+                        href={`/api/print-booking?id=${encodeURIComponent(booking.id)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors"
+                      >
+                        <Printer className="w-4 h-4" />
+                        Download / Print
+                      </a>
                       <button
                         onClick={() => deleteBooking(booking.id)}
                         className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-medium transition-colors"
