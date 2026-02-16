@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { getStore } from "@netlify/blobs";
 import { addOns } from "@/data/add-ons";
+import { scooterPricing, getPricePerDay } from "@/data/scooter-pricing";
 
 const M = 50;
 const TOP_MARGIN = 72; // ~2.5 cm from top for printing
-const LINE = 20;      // spacing between lines (was 14)
-const LINE_SMALL = 16; // spacing for small text (was 11)
+const LINE = 14;      // spacing between lines (tighter to fit on one page)
+const LINE_SMALL = 11;
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,20 +26,31 @@ export async function GET(request: NextRequest) {
     const customer_name = String(booking.name ?? "");
     const customer_phone = String(booking.phone ?? "");
     const customer_email = String(booking.email ?? "");
-    const scooter_name = String(booking.scooter ?? "");
+    const scooter_id = String(booking.scooter ?? "");
+    const scooter_name = scooterPricing.find((s) => s.id === scooter_id)?.name ?? scooter_id;
     const startDate = booking.startDate ? new Date(String(booking.startDate)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
     const endDate = booking.endDate ? new Date(String(booking.endDate)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
-    const total_cost = Number(booking.total ?? 0);
+    let total_cost = Number(booking.total ?? 0);
     const amount_paid = Number(booking.amount_paid ?? 0);
-    const amount_to_pay = Math.max(0, total_cost - amount_paid);
-    const payment_method = String(booking.payment_method ?? "").trim();
-    const payment_reference = String(booking.payment_reference ?? "").trim();
     const addOnIds = (booking.addOns as string[] | undefined) ?? [];
     const days = booking.startDate && booking.endDate
       ? Math.ceil((new Date(String(booking.endDate)).getTime() - new Date(String(booking.startDate)).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
     const insuranceOption = String(booking.insurance ?? "none").toLowerCase();
     const insuranceCost = days * (insuranceOption === "full" ? 100 : insuranceOption === "limited" ? 50 : 0);
+    if (total_cost === 0 && days > 0 && scooter_id) {
+      const baseRate = getPricePerDay(scooter_id, days) * days;
+      const addOnsTotal = addOnIds.reduce((sum, aid) => {
+        const addOn = addOns.find((a) => a.id === aid);
+        if (!addOn) return sum;
+        return sum + (addOn.perDay ? addOn.price * days : addOn.price);
+      }, 0);
+      const delivery = booking.delivery === "yes" && booking.distance ? Math.max(100, Number(booking.distance) * 12.5 * 2) : 0;
+      total_cost = Math.round(baseRate + insuranceCost + addOnsTotal + delivery);
+    }
+    const amount_to_pay = Math.max(0, total_cost - amount_paid);
+    const payment_method = String(booking.payment_method ?? "").trim();
+    const payment_reference = String(booking.payment_reference ?? "").trim();
     const dailyRate = days > 0 ? Math.round((total_cost - insuranceCost) / days) : 0;
     const isPayAtCollection = payment_method.toLowerCase().includes("pay at collection") || payment_method.toLowerCase().includes("cash");
     const addOnLines: { name: string; price: number; status: string }[] = addOnIds.map((aid) => {
@@ -66,31 +78,31 @@ export async function GET(request: NextRequest) {
     };
 
     draw("Scooter Rental Agreement", 16, true);
-    y -= 14; // extra space after title
+    y -= 8;
     draw("1. Rental Company / Owner Information", 11, true);
     draw("Name / Contact Number    Palm Riders - +63 945 701 4440");
     draw("Address                  Blue Corner House, Purok V, General Luna");
-    y -= 10;
+    y -= 6;
     draw("2. Renter Information", 11, true);
     draw("Full Name and Contact Number    " + customer_name + " - " + customer_phone);
     draw("Address                         _________________________________________");
     draw("Id type and serial number       _________________________________________");
-    y -= 10;
+    y -= 6;
     draw("3. Scooter Information", 11, true);
     draw("Make / Model / Color / Plate Number    " + scooter_name + " / _________________________");
     draw("Condition Before Rental                3 months old, good.");
-    y -= 10;
+    y -= 6;
     draw("4. Rental Terms & Fees", 11, true);
     draw("Rental Period: From " + startDate + " To " + endDate);
     draw("Fuel Level at Start: ______________________________");
     draw("Daily Rate: P " + (days > 0 ? dailyRate : "__________"));
     draw("Insurance: P " + insuranceCost);
-    y -= 8;
+    y -= 4;
     draw("1. Total amount to pay: P " + total_cost, 10, true);
     const paidLine = "2. Amount paid: P " + amount_paid + (payment_method ? " (" + payment_method + (payment_reference ? (payment_method.toLowerCase().includes("card") ? " - Code: " + payment_reference : " - ID: " + payment_reference) : "") + ")" : "");
     draw(paidLine.length > 90 ? paidLine.slice(0, 87) + "..." : paidLine);
     draw("3. Amount to pay: P " + amount_to_pay, 10, true);
-    y -= 8;
+    y -= 4;
     draw("Add-ons:", 10, true);
     if (addOnLines.length === 0) {
       draw("  None selected.");
@@ -100,9 +112,9 @@ export async function GET(request: NextRequest) {
         draw(text.length > 88 ? text.slice(0, 85) + "..." : text, 9);
       }
     }
-    y -= 8;
+    y -= 4;
     draw("! If scooter is returned below this fuel level, renter will be charged P70 per bar missing on the fuel indicator.", 9);
-    y -= 12;
+    y -= 6;
     draw("5. Rules & Responsibilities", 11, true);
     draw("1. The renter shall return the scooter in the same condition as received.");
     draw("2. A video recording of the scooter's condition will be made on the day of rental.");
@@ -110,15 +122,15 @@ export async function GET(request: NextRequest) {
     draw("3. The renter must pay for the full repair cost of any damages to the scooter during the rental period.");
     draw("4. The scooter may only be driven by the renter named in this agreement.");
     draw("5. Use of the scooter while intoxicated, reckless, or for illegal activities is strictly prohibited.");
-    y -= 10;
+    y -= 6;
     draw("Lost Key P2000    Fuel Below Start Level P70 per missing bar    Traffic Fine / Violation Full amount to be paid by renter");
     draw("Major Damage / Theft Cost of repair or replacement    Lost or Damaged Helmet P3000    Lost or Damaged Phone Holder P500", 9);
-    y -= 12;
+    y -= 6;
     draw("7. Agreement", 11, true);
     draw("By signing below, both parties agree to the terms and conditions of this agreement.");
     draw("Renter Signature ____________________    Name ____________________    Date ____/____/______");
     draw("Owner Signature ____________________    Name ____________________    Date ____/____/______");
-    y -= 10;
+    y -= 6;
     draw("Booking ID: " + id + " - " + new Date().toLocaleString(), 9);
 
     const pdfBytes = await doc.save();
