@@ -88,8 +88,12 @@ export async function GET(request: NextRequest) {
 
     const pdfBytes = await doc.save();
     const filename = "rental-" + id.replace(/[^a-zA-Z0-9-]/g, "_") + ".pdf";
+    const buffer = pdfBytes.buffer.slice(
+      pdfBytes.byteOffset,
+      pdfBytes.byteOffset + pdfBytes.byteLength
+    ) as ArrayBuffer;
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(new Blob([buffer]), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
