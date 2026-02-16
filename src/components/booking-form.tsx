@@ -538,9 +538,40 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
 
     const for_our_team = `ADD-ONS: ${addOnsListForEmail}\n\nPAYMENT:\n${paymentBreakdown}`;
 
+    const insuranceLabel = `${getInsuranceLabel()} - ₱${calculateInsuranceCost()}`;
+    const rental_extras = `Insurance: ${insuranceLabel}\nAdd-ons: ${addOnsListForEmail}`;
+
+    const insuranceCostNum = calculateInsuranceCost();
+    const dailyRate = days > 0 ? Math.round((totalCost - insuranceCostNum) / days) : 0;
+    const amountToPayRemaining = Math.max(0, totalCost - amountNow);
+    const paymentMethodLabel = formData.paymentOption === "pickup" ? "Pay at collection (cash)" : formData.paymentOption === "deposit" ? (formData.paymentMethod || "Online") : (formData.paymentMethod || "Online");
+    const addOnStatus = formData.paymentOption === "pickup" ? "to be paid on collection" : "included in payment above";
+    const addOnLinesForEmail = selectedAddOns.length > 0
+      ? selectedAddOns.map(id => {
+          const addOn = addOns.find(a => a.id === id);
+          if (!addOn) return "";
+          const price = addOn.perDay ? addOn.price * days : addOn.price;
+          return `  - ${addOn.name}: ₱${price} - ${addOnStatus}`;
+        }).join("\n")
+      : "  None selected.";
+    const booking_full_summary = `RENTAL TERMS & FEES
+──────────────────────
+Rental Period: ${startDate} - ${endDate}
+Daily Rate: ₱${dailyRate}
+Insurance: ${insuranceLabel}
+1. Total amount to pay: ₱${totalCost}
+2. Amount paid: ₱${amountNow} (${paymentMethodLabel})
+3. Amount to pay: ₱${amountToPayRemaining}
+
+ADD-ONS
+──────────────────────
+${addOnLinesForEmail}`;
+
     const emailData = {
       booking_id: bookingId,
       for_our_team,
+      rental_extras,
+      booking_full_summary,
       customer_name: formData.name,
       customer_email: formData.email,
       customer_phone: formData.phone,
@@ -549,7 +580,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       end_date: endDate,
       pickup_time: formatTime(formData.pickupTime),
       delivery: deliveryInfo,
-      insurance: `${getInsuranceLabel()} - ₱${calculateInsuranceCost()}`,
+      insurance: insuranceLabel,
       surf_rack: formData.surfRack === "yes" ? "Yes (FREE)" : "No",
       add_ons: addOnsList,
       payment_option: formData.paymentOption === "full" ? "Pay in Full" : formData.paymentOption === "pickup" ? "Pay at Pickup" : "Deposit",
@@ -1104,9 +1135,6 @@ ${paymentLines}
 
       <div className="mb-6">
         <label className="block text-sm font-semibold mb-3 dark:text-slate-700">Need Delivery Service?</label>
-        <div className="text-xs text-teal-600 mb-2">
-          ₱12.50/km (round trip) · <strong>Minimum ₱100</strong> per delivery (e.g. 1 km = ₱100)
-        </div>
         {showDeliveryError && (
           <div className="mb-3 text-sm text-red-600 bg-red-50 p-3 rounded-lg border-2 border-red-500">
             Please select scooter model, start date, and end date first
@@ -1165,14 +1193,6 @@ ${paymentLines}
         </div>
       )}
 
-      {atCapacity && formData.startDate && formData.endDate && (
-        <div className="mb-4 p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
-          <p className="text-sm font-medium text-amber-900">
-            ⚠️ We’re at full capacity for these dates. You can still book – <strong>WhatsApp confirmation is required</strong>. Opening hours: <strong>10am–10pm (Philippine time)</strong>.
-          </p>
-        </div>
-      )}
-
       {formData.scooter && formData.startDate && formData.endDate && (
         <div className="mb-6 p-4 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-lg border-2 border-teal-200 shadow-md">
           <div className="text-lg font-semibold mb-2 flex items-center gap-2 dark:text-slate-800">
@@ -1212,7 +1232,7 @@ ${paymentLines}
           {/* Delivery Fee Info */}
           {formData.delivery === "yes" && formData.distance && (
             <div className="text-sm text-slate-600 dark:text-slate-700 mt-2">
-              <span>Delivery fee: ₱{getDeliveryFee()} (₱12.50/km, min. ₱100)</span>
+              <span>Delivery fee: ₱{getDeliveryFee()}</span>
             </div>
           )}
           {selectedAddOns.length > 0 && (

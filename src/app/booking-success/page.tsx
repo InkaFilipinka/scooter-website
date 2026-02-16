@@ -238,11 +238,39 @@ Total: ₱${bookingData.total}
 
     // 2. Send EmailJS notifications
     try {
+      const insuranceLabel = `${getInsuranceLabel(bookingData.insurance)} - ₱${insuranceCost}`;
       const for_our_team = `ADD-ONS: ${addOnsList}\n\nPAYMENT:\nTotal: ₱${bookingData.total}\nAmount paid: ₱${bookingData.total}`;
+      const rental_extras = `Insurance: ${insuranceLabel}\nAdd-ons: ${addOnsList}`;
+
+      const dailyRate = days > 0 ? Math.round((bookingData.total - insuranceCost) / days) : 0;
+      const addOnLinesForEmail = (bookingData.addOns?.length ?? 0) > 0
+        ? bookingData.addOns!
+            .map((id) => {
+              const addOn = addOns.find((a) => a.id === id);
+              if (!addOn) return '';
+              const price = addOn.perDay ? addOn.price * days : addOn.price;
+              return `  - ${addOn.name}: ₱${price} - included in payment above`;
+            })
+            .join('\n')
+        : '  None selected.';
+      const booking_full_summary = `RENTAL TERMS & FEES
+──────────────────────
+Rental Period: ${startDate} - ${endDate}
+Daily Rate: ₱${dailyRate}
+Insurance: ${insuranceLabel}
+1. Total amount to pay: ₱${bookingData.total}
+2. Amount paid: ₱${bookingData.total} (Card)
+3. Amount to pay: ₱0
+
+ADD-ONS
+──────────────────────
+${addOnLinesForEmail}`;
 
       const emailData = {
         booking_id: bookingData.id,
         for_our_team,
+        rental_extras,
+        booking_full_summary,
         customer_name: bookingData.name,
         customer_email: bookingData.email,
         customer_phone: bookingData.phone,
@@ -251,7 +279,7 @@ Total: ₱${bookingData.total}
         end_date: endDate,
         pickup_time: formatTime(bookingData.pickupTime),
         delivery: deliveryInfo,
-        insurance: `${getInsuranceLabel(bookingData.insurance)} - ₱${insuranceCost}`,
+        insurance: insuranceLabel,
         surf_rack: bookingData.surfRack === "yes" ? "Yes (FREE)" : "No",
         add_ons: addOnsList,
         payment_option: "Pay in Full",

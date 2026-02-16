@@ -48,12 +48,7 @@ End Date: {{end_date}}
 Delivery: {{delivery}}
 Surf Rack: {{surf_rack}}
 
-Payment Details:
----------------
-Payment Option: {{payment_option}}
-Payment Method: {{payment_method}}
-Amount to Pay Now: ₱{{amount_to_pay}}
-Total Rental Cost: ₱{{total_cost}}
+{{booking_full_summary}}
 
 Please contact the customer to confirm the booking.
 ```
