@@ -51,6 +51,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [showDeliveryError, setShowDeliveryError] = useState(false);
+  const [showDeliveryDepositModal, setShowDeliveryDepositModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [currentBookingId, setCurrentBookingId] = useState<string>('');
@@ -155,24 +156,30 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     }
     setShowDeliveryError(false);
 
-    // If switching to delivery and pay-at-pickup was selected, reset to full payment
-    // (pay-at-pickup is only available for store pickup)
-    const newPaymentOption = deliveryType === "yes" && formData.paymentOption === "pickup"
-      ? "full"
-      : formData.paymentOption;
+    if (deliveryType === "yes") {
+      setShowDeliveryDepositModal(true);
+      return;
+    }
 
+    // Switching to pickup
     setFormData({
       ...formData,
-      delivery: deliveryType,
-      distance: deliveryType === "no" ? "" : formData.distance,
-      deliveryLocation: deliveryType === "no" ? "" : formData.deliveryLocation,
+      delivery: "no",
+      distance: "",
+      deliveryLocation: "",
+    });
+    setSelectedCoords(null);
+  };
+
+  const confirmDeliveryDeposit = () => {
+    setShowDeliveryDepositModal(false);
+    const newPaymentOption = formData.paymentOption === "pickup" ? "full" : formData.paymentOption;
+    setFormData({
+      ...formData,
+      delivery: "yes",
       paymentOption: newPaymentOption,
     });
-    if (deliveryType === "yes") {
-      setIsMapOpen(true);
-    } else {
-      setSelectedCoords(null);
-    }
+    setIsMapOpen(true);
   };
 
   const processPayment = async (bookingId: string, amount: number) => {
@@ -668,6 +675,23 @@ Total Cost: ₱${calculateTotal()}
         onConfirm={handleAddOnsConfirm}
         rentalDays={getRentalDays()}
       />
+      {/* Delivery deposit requirement popup */}
+      {showDeliveryDepositModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
+            <p className="text-slate-800 dark:text-slate-200 font-medium mb-6">
+              If you pick Delivery option a minimum payment of 1 day as deposit is required.
+            </p>
+            <button
+              type="button"
+              onClick={confirmDeliveryDeposit}
+              className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg transition-colors"
+            >
+              I understand
+            </button>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
       <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
         <div className="text-sm font-semibold mb-2 dark:text-slate-700">We Accept</div>
@@ -1292,7 +1316,7 @@ Total Cost: ₱${calculateTotal()}
             Processing...
           </span>
         ) : formData.paymentOption === "pickup" ? (
-          '🏪 Reserve Scooter (Pay at Pickup) 🌴'
+          '💵 Pay Cash on Collection – No Payment Now'
         ) : (
           '🏝️ Submit Booking & Pay 🌴'
         )}
