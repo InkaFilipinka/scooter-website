@@ -113,21 +113,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadPaymentLinks = async () => {
-    setIsLoadingLinks(true);
-    try {
-      const response = await fetch("/api/payment-links");
-      const data = await response.json();
-      if (response.ok && data.paymentLinks) {
-        setPaymentLinks(data.paymentLinks);
-      }
-    } catch (error) {
-      console.error("Failed to load payment links:", error);
-    } finally {
-      setIsLoadingLinks(false);
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("adminAuth");
     router.push("/admin");
