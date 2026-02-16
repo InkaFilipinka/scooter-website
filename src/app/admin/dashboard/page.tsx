@@ -430,7 +430,7 @@ export default function AdminDashboard() {
                     {booking.delivery === "yes" && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                         <div className="text-sm text-blue-800">
-                          <strong>Delivery:</strong> {booking.distance} km • Fee: ₱{parseFloat(booking.distance) * 10 * 2}
+                          <strong>Delivery:</strong> {booking.distance} km • Fee: ₱{Math.max(100, Math.round(parseFloat(booking.distance || '0') * 12.5 * 2))}
                         </div>
                       </div>
                     )}
