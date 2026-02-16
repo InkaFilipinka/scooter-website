@@ -23,11 +23,15 @@ interface Booking {
   [key: string]: unknown;
 }
 
-// GET - List all bookings or get one by id
+const TOTAL_STOCK = 4;
+
+// GET - List all bookings, get one by id, or check availability for a date range
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const start = searchParams.get('start');
+    const end = searchParams.get('end');
 
     const store = getStore('bookings');
 
@@ -45,6 +49,22 @@ export async function GET(request: NextRequest) {
     for (const blob of blobs) {
       const b = await store.get(blob.key, { type: 'json' }) as Booking;
       if (b) bookings.push(b);
+    }
+
+    if (start && end) {
+      const startTime = new Date(start).getTime();
+      const endTime = new Date(end).getTime();
+      const inUse = bookings.filter((b) => {
+        if (b.status === 'cancelled') return false;
+        const bStart = new Date(b.startDate).getTime();
+        const bEnd = new Date(b.endDate).getTime();
+        return bStart <= endTime && bEnd >= startTime;
+      }).length;
+      return NextResponse.json({
+        inUse,
+        total: TOTAL_STOCK,
+        atCapacity: inUse >= TOTAL_STOCK,
+      });
     }
 
     bookings.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());

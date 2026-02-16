@@ -225,8 +225,11 @@ Total: ₱${bookingData.total}
 
     // 2. Send EmailJS notifications
     try {
+      const for_our_team = `ADD-ONS: ${addOnsList}\n\nPAYMENT:\nTotal: ₱${bookingData.total}\nAmount paid: ₱${bookingData.total}`;
+
       const emailData = {
         booking_id: bookingData.id,
+        for_our_team,
         customer_name: bookingData.name,
         customer_email: bookingData.email,
         customer_phone: bookingData.phone,
@@ -242,6 +245,8 @@ Total: ₱${bookingData.total}
         payment_method: "Credit Card (Stripe)",
         amount_to_pay: bookingData.total,
         total_cost: bookingData.total,
+        deposit_amount: 0,
+        balance_owed: 0,
         timestamp: new Date().toLocaleString(),
         business_email: 'contact@siargaoscooterrentals.com',
       };

@@ -57,6 +57,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
   const [currentBookingId, setCurrentBookingId] = useState<string>('');
   const [pendingSubmit, setPendingSubmit] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [atCapacity, setAtCapacity] = useState(false);
 
   const sectionContactRef = useRef<HTMLDivElement>(null);
   const sectionDatesRef = useRef<HTMLDivElement>(null);
@@ -151,6 +152,27 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       setDateError(null);
     }
   }, [formData.startDate, formData.endDate]);
+
+  // Effect to check stock availability for selected dates
+  useEffect(() => {
+    if (!formData.startDate || !formData.endDate || dateError) {
+      setAtCapacity(false);
+      return;
+    }
+    const check = async () => {
+      try {
+        const res = await fetch(
+          `/api/bookings?start=${encodeURIComponent(formData.startDate)}&end=${encodeURIComponent(formData.endDate)}`
+        );
+        const data = await res.json();
+        if (res.ok && data.atCapacity) setAtCapacity(true);
+        else setAtCapacity(false);
+      } catch {
+        setAtCapacity(false);
+      }
+    };
+    check();
+  }, [formData.startDate, formData.endDate, dateError]);
 
   // Check if delivery options should be enabled
   const canSelectDelivery = () => {
@@ -480,8 +502,30 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
         }).join('\n')
       : "None";
 
+    const totalCost = calculateTotal();
+    const amountNow = getPaymentAmount();
+    const depositAmount = formData.paymentOption === "deposit" ? amountNow : 0;
+    const balanceOwed = formData.paymentOption === "deposit" ? Math.round(totalCost - depositAmount) : 0;
+
+    const addOnsListForEmail = selectedAddOns.length > 0
+      ? selectedAddOns.map(id => {
+          const addOn = addOns.find(a => a.id === id);
+          if (!addOn) return '';
+          const price = addOn.perDay ? addOn.price * days : addOn.price;
+          return `${addOn.name} - ₱${price}`;
+        }).join(', ')
+      : "None";
+
+    const paymentBreakdown =
+      formData.paymentOption === "deposit"
+        ? `Total: ₱${totalCost}\nDeposit paid: ₱${depositAmount}\nBalance owed on pickup: ₱${balanceOwed}`
+        : `Total: ₱${totalCost}\nAmount paid: ₱${amountNow}`;
+
+    const for_our_team = `ADD-ONS: ${addOnsListForEmail}\n\nPAYMENT:\n${paymentBreakdown}`;
+
     const emailData = {
       booking_id: bookingId,
+      for_our_team,
       customer_name: formData.name,
       customer_email: formData.email,
       customer_phone: formData.phone,
@@ -493,10 +537,12 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       insurance: `${getInsuranceLabel()} - ₱${calculateInsuranceCost()}`,
       surf_rack: formData.surfRack === "yes" ? "Yes (FREE)" : "No",
       add_ons: addOnsList,
-      payment_option: formData.paymentOption === "full" ? "Pay in Full" : "Deposit",
-      payment_method: formData.paymentMethod,
-      amount_to_pay: getPaymentAmount(),
-      total_cost: calculateTotal(),
+      payment_option: formData.paymentOption === "full" ? "Pay in Full" : formData.paymentOption === "pickup" ? "Pay at Pickup" : "Deposit",
+      payment_method: formData.paymentMethod || "Pay at Pickup",
+      amount_to_pay: amountNow,
+      total_cost: totalCost,
+      deposit_amount: depositAmount,
+      balance_owed: balanceOwed,
       timestamp: new Date().toLocaleString(),
       business_email: 'contact@siargaoscooterrentals.com',
     };
@@ -512,7 +558,18 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
           }).join(', ')
         : "None";
 
-      // Build notification message
+      const paymentOptionLabel = formData.paymentOption === "full" ? "Pay in Full" : formData.paymentOption === "pickup" ? "Pay at Pickup" : "Deposit";
+      const paymentLines = formData.paymentOption === "deposit"
+        ? `Option: ${paymentOptionLabel}
+Method: ${formData.paymentMethod || "—"}
+Total: ₱${totalCost}
+Deposit paid: ₱${depositAmount}
+Balance owed on pickup: ₱${balanceOwed}`
+        : `Option: ${paymentOptionLabel}
+Method: ${formData.paymentMethod || "Pay at Pickup"}
+Amount now: ₱${amountNow}
+Total: ₱${totalCost}`;
+
       const notificationMessage = `🛵 NEW BOOKING - PALM RIDERS 🌴
 
 📋 Booking ID: ${bookingId}
@@ -533,10 +590,7 @@ Surf Rack: ${formData.surfRack === "yes" ? "Yes (FREE)" : "No"}
 Add-ons: ${addOnsListSimple}
 
 💰 PAYMENT
-Option: ${formData.paymentOption === "full" ? "Pay in Full" : formData.paymentOption === "pickup" ? "Pay at Pickup" : "Deposit"}
-Method: ${formData.paymentMethod || "Pay at Pickup"}
-Amount Now: ₱${getPaymentAmount()}
-Total Cost: ₱${calculateTotal()}
+${paymentLines}
 
 ⚡ Contact customer to confirm!`;
 
@@ -1093,6 +1147,14 @@ Total Cost: ₱${calculateTotal()}
               Coordinates: {selectedCoords.lat.toFixed(6)}, {selectedCoords.lng.toFixed(6)}
             </div>
           )}
+        </div>
+      )}
+
+      {atCapacity && formData.startDate && formData.endDate && (
+        <div className="mb-4 p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
+          <p className="text-sm font-medium text-amber-900">
+            ⚠️ We’re at full capacity for these dates. You can still book – <strong>WhatsApp confirmation is required</strong>. Opening hours: <strong>10am–10pm (Philippine time)</strong>.
+          </p>
         </div>
       )}
 
