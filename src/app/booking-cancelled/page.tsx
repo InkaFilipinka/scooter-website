@@ -9,14 +9,12 @@ function BookingCancelledContent() {
   const bookingId = searchParams.get("booking_id");
 
   useEffect(() => {
-    // Remove the pending booking from localStorage since payment was cancelled
-    if (bookingId) {
-      const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-      const updatedBookings = bookings.filter(
-        (booking: { id: string }) => booking.id !== bookingId
-      );
-      localStorage.setItem("bookings", JSON.stringify(updatedBookings));
-    }
+    if (!bookingId) return;
+    fetch("/api/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: bookingId, status: "cancelled" }),
+    }).catch((err) => console.error("Failed to update booking:", err));
   }, [bookingId]);
 
   return (

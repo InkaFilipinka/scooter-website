@@ -4,29 +4,21 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, Suspense } from 'react';
 
-interface Booking {
-  id: string;
-  status?: string;
-  paidAt?: string;
-  [key: string]: unknown;
-}
-
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking');
 
   useEffect(() => {
-    // Update booking status in localStorage
-    if (bookingId) {
-      const bookings: Booking[] = JSON.parse(localStorage.getItem('bookings') || '[]');
-      const updatedBookings = bookings.map((booking: Booking) => {
-        if (booking.id === bookingId) {
-          return { ...booking, status: 'paid', paidAt: new Date().toISOString() };
-        }
-        return booking;
-      });
-      localStorage.setItem('bookings', JSON.stringify(updatedBookings));
-    }
+    if (!bookingId) return;
+    fetch('/api/bookings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: bookingId,
+        status: 'confirmed',
+        paidAt: new Date().toISOString(),
+      }),
+    }).catch((err) => console.error('Failed to update booking status:', err));
   }, [bookingId]);
 
   return (

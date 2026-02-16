@@ -9,7 +9,6 @@ export interface AddOn {
   perDay: boolean;
   isFree?: boolean;
 }
-
 export const addOns: AddOn[] = [
   // FREE ADD-ONS
   {

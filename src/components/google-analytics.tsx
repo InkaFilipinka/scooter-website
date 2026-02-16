@@ -1,9 +1,7 @@
 "use client";
-
 import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
-
 // Extend Window interface to include gtag
 declare global {
   interface Window {
@@ -11,10 +9,8 @@ declare global {
     dataLayer?: unknown[];
   }
 }
-
 // Google Analytics Measurement ID - Replace with your actual GA4 ID
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
-
 // Track page views
 export function pageview(url: string) {
   if (typeof window !== 'undefined' && window.gtag) {
@@ -23,7 +19,6 @@ export function pageview(url: string) {
     });
   }
 }
-
 // Track custom events
 export function event({ action, category, label, value }: {
   action: string;
@@ -39,7 +34,6 @@ export function event({ action, category, label, value }: {
     });
   }
 }
-
 // Track booking form submissions
 export function trackBookingSubmission(scooter: string, days: number, total: number) {
   event({
@@ -49,7 +43,6 @@ export function trackBookingSubmission(scooter: string, days: number, total: num
     value: total,
   });
 }
-
 // Track payment method selection
 export function trackPaymentMethod(method: string) {
   event({
@@ -58,7 +51,6 @@ export function trackPaymentMethod(method: string) {
     label: method,
   });
 }
-
 // Track add-ons selection
 export function trackAddOnSelection(addOn: string) {
   event({
@@ -67,7 +59,6 @@ export function trackAddOnSelection(addOn: string) {
     label: addOn,
   });
 }
-
 // Track WhatsApp click
 export function trackWhatsAppClick() {
   event({
@@ -76,7 +67,6 @@ export function trackWhatsAppClick() {
     label: 'WhatsApp Button',
   });
 }
-
 // Track phone call click
 export function trackPhoneClick() {
   event({
@@ -85,33 +75,27 @@ export function trackPhoneClick() {
     label: 'Phone Button',
   });
 }
-
 // Component to track page views
 function PageViewTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   useEffect(() => {
     if (pathname) {
       const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
       pageview(url);
     }
   }, [pathname, searchParams]);
-
   return null;
 }
-
 export function GoogleAnalytics() {
   // Don't load GA in development
   if (process.env.NODE_ENV === 'development') {
     return null;
   }
-
   // Don't load if no GA ID is set
   if (!process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
     return null;
   }
-
   return (
     <>
       {/* Global Site Tag (gtag.js) - Google Analytics */}

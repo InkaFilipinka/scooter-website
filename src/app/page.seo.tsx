@@ -1,5 +1,4 @@
 "use client";
-
 export default function HomeSEOHelper() {
   return (
     <h1 className="sr-only">

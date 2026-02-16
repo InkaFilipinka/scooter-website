@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -30,7 +29,6 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
-
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -58,7 +56,6 @@
     --chart-5: 340 75% 55%;
   }
 }
-
 @layer base {
   * {
     @apply border-border;
@@ -67,36 +64,29 @@
     @apply bg-background text-foreground;
   }
 }
-
 /* Custom Range Slider Styling */
 @layer components {
   .time-slider {
     @apply w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer;
   }
-
   .time-slider::-webkit-slider-thumb {
     @apply appearance-none w-6 h-6 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 cursor-pointer shadow-lg border-2 border-white;
     -webkit-appearance: none;
     margin-top: -8px;
   }
-
   .time-slider::-moz-range-thumb {
     @apply w-6 h-6 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 cursor-pointer shadow-lg border-2 border-white;
   }
-
   .time-slider::-webkit-slider-runnable-track {
     @apply h-2 rounded-lg bg-gradient-to-r from-teal-100 to-emerald-100;
   }
-
   .time-slider::-moz-range-track {
     @apply h-2 rounded-lg bg-gradient-to-r from-teal-100 to-emerald-100;
   }
-
   .time-slider:focus {
     @apply outline-none ring-2 ring-teal-500 ring-offset-2;
   }
 }
-
 /* Custom Animations */
 @keyframes bounce-slow {
   0%, 100% {
@@ -106,7 +96,6 @@
     transform: translateY(-10px);
   }
 }
-
 .animate-bounce-slow {
   animation: bounce-slow 3s ease-in-out infinite;
 }

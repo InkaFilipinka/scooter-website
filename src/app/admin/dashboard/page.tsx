@@ -84,10 +84,30 @@ export default function AdminDashboard() {
     loadPaymentLinks();
   }, [router]);
 
-  const loadBookings = () => {
-    const stored = localStorage.getItem("bookings");
-    if (stored) {
-      setBookings(JSON.parse(stored));
+  const loadBookings = async () => {
+    try {
+      const response = await fetch("/api/bookings");
+      const data = await response.json();
+      if (response.ok && data.bookings) {
+        setBookings(data.bookings);
+      }
+    } catch (error) {
+      console.error("Failed to load bookings:", error);
+    }
+  };
+
+  const loadPaymentLinks = async () => {
+    setIsLoadingLinks(true);
+    try {
+      const response = await fetch("/api/payment-links");
+      const data = await response.json();
+      if (response.ok && data.paymentLinks) {
+        setPaymentLinks(data.paymentLinks);
+      }
+    } catch (error) {
+      console.error("Failed to load payment links:", error);
+    } finally {
+      setIsLoadingLinks(false);
     }
   };
 
@@ -111,19 +131,112 @@ export default function AdminDashboard() {
     router.push("/admin");
   };
 
-  const updateBookingStatus = (id: string, newStatus: Booking["status"]) => {
-    const updated = bookings.map(booking =>
-      booking.id === id ? { ...booking, status: newStatus } : booking
-    );
-    setBookings(updated);
-    localStorage.setItem("bookings", JSON.stringify(updated));
+  const updateBookingStatus = async (id: string, newStatus: Booking["status"]) => {
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (response.ok) {
+        const updated = bookings.map(booking =>
+          booking.id === id ? { ...booking, status: newStatus } : booking
+        );
+        setBookings(updated);
+      }
+    } catch (error) {
+      console.error("Failed to update booking status:", error);
+    }
   };
 
-  const deleteBooking = (id: string) => {
-    if (confirm("Are you sure you want to delete this booking?")) {
-      const updated = bookings.filter(booking => booking.id !== id);
-      setBookings(updated);
-      localStorage.setItem("bookings", JSON.stringify(updated));
+  const deleteBooking = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this booking?")) return;
+    try {
+      const response = await fetch(`/api/bookings?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setBookings(bookings.filter(booking => booking.id !== id));
+      } else {
+        console.error("Failed to delete booking");
+      }
+    } catch (error) {
+      console.error("Failed to delete booking:", error);
+    }
+  };
+
+  const createPaymentLink = async () => {
+    if (!linkAmount || Number(linkAmount) <= 0) {
+      alert("Please enter a valid amount");
+      return;
+    }
+
+    setIsCreatingLink(true);
+    try {
+      const response = await fetch("/api/payment-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: Number(linkAmount),
+          description: linkDescription,
+          customerName: linkCustomerName,
+          customerEmail: linkCustomerEmail,
+          expiresInHours: linkExpiry ? Number(linkExpiry) : undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Copy link to clipboard
+        await navigator.clipboard.writeText(data.paymentUrl);
+        setCopiedId(data.paymentLink.id);
+        setTimeout(() => setCopiedId(null), 3000);
+
+        // Reset form
+        setLinkAmount("");
+        setLinkDescription("");
+        setLinkCustomerName("");
+        setLinkCustomerEmail("");
+
+        // Reload payment links
+        await loadPaymentLinks();
+
+        alert(`Payment link created and copied to clipboard!\n\n${data.paymentUrl}`);
+      } else {
+        alert(data.error || "Failed to create payment link");
+      }
+    } catch (error) {
+      console.error("Failed to create payment link:", error);
+      alert("Failed to create payment link");
+    } finally {
+      setIsCreatingLink(false);
+    }
+  };
+
+  const copyPaymentLink = async (id: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://siargaoscooterrentals.com";
+    const url = `${baseUrl}/pay/${id}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 3000);
+  };
+
+  const deletePaymentLink = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this payment link?")) return;
+
+    try {
+      const response = await fetch(`/api/payment-links?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        await loadPaymentLinks();
+      } else {
+        alert("Failed to delete payment link");
+      }
+    } catch (error) {
+      console.error("Failed to delete payment link:", error);
     }
   };
 

@@ -1,9 +1,7 @@
 import { MetadataRoute } from 'next'
 import { blogPosts } from '@/data/blog-posts'
-
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://siargaoscooterrentals.com'
-
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -49,7 +47,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
   ]
-
   // Dynamic blog post pages
   const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
@@ -57,6 +54,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }))
-
   return [...staticPages, ...blogPages]
 }

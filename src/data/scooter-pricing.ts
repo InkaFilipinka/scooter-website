@@ -4,7 +4,6 @@ export interface PricingTier {
   label: string;
   labelTl: string;
 }
-
 export interface ScooterPricing {
   id: string;
   name: string;
@@ -20,7 +19,6 @@ export interface ScooterPricing {
     day1: number;        // 1-2 days
   };
 }
-
 export const pricingTiers: PricingTier[] = [
   { minDays: 28, maxDays: null, label: '28+ days (Best Rate)', labelTl: '28+ araw (Pinakamababang Presyo)' },
   { minDays: 20, maxDays: 27, label: '20-27 days', labelTl: '20-27 araw' },
@@ -28,7 +26,6 @@ export const pricingTiers: PricingTier[] = [
   { minDays: 3, maxDays: 9, label: '3-9 days', labelTl: '3-9 araw' },
   { minDays: 1, maxDays: 2, label: '1-2 days', labelTl: '1-2 araw' },
 ];
-
 export const scooterPricing: ScooterPricing[] = [
   {
     id: 'honda-beat',
@@ -73,19 +70,16 @@ export const scooterPricing: ScooterPricing[] = [
     },
   },
 ];
-
 // Helper function to get price per day based on rental duration
 export function getPricePerDay(scooterId: string, days: number): number {
   const scooter = scooterPricing.find(s => s.id === scooterId);
   if (!scooter) return 0;
-
   if (days >= 28) return scooter.pricing.days28Plus;
   if (days >= 20) return scooter.pricing.days20Plus;
   if (days >= 10) return scooter.pricing.days10Plus;
   if (days >= 3) return scooter.pricing.days3Plus;
   return scooter.pricing.day1;
 }
-
 // Helper function to get the pricing tier label
 export function getPricingTierLabel(days: number): string {
   if (days >= 28) return '28+ days (Best Rate)';
@@ -94,19 +88,16 @@ export function getPricingTierLabel(days: number): string {
   if (days >= 3) return '3-9 days';
   return '1-2 days';
 }
-
 // Get the lowest price (for display on cards)
 export function getLowestPrice(scooterId: string): number {
   const scooter = scooterPricing.find(s => s.id === scooterId);
   if (!scooter) return 0;
   return scooter.pricing.days28Plus;
 }
-
 // Get all pricing tiers for a scooter (for display)
 export function getAllPricingTiers(scooterId: string): { tier: string; price: number }[] {
   const scooter = scooterPricing.find(s => s.id === scooterId);
   if (!scooter) return [];
-
   return [
     { tier: '28+ days', price: scooter.pricing.days28Plus },
     { tier: '20+ days', price: scooter.pricing.days20Plus },

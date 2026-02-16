@@ -1,11 +1,9 @@
 import { ReactNode } from "react";
-
 interface ServiceCardProps {
   icon: ReactNode;
   title: string;
   description: string;
 }
-
 export function ServiceCard({ icon, title, description }: ServiceCardProps) {
   return (
     <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-8 text-center hover:shadow-xl transition-all border-2 border-teal-100 hover:border-teal-300 relative overflow-hidden">
