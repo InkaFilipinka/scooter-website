@@ -573,13 +573,13 @@ Total Cost: ₱${calculateTotal()}
     // Add insurance cost
     total += calculateInsuranceCost();
 
-    // Delivery fee - FREE in General Luna, otherwise 6.5 PHP/km round trip
+    // Delivery fee - FREE in General Luna, otherwise 12.5 PHP/km round trip
     if (formData.delivery === "yes" && formData.distance) {
       const distance = Number.parseFloat(formData.distance);
       // Check if delivery location is in General Luna (within ~3km is considered GL area)
       const isGeneralLuna = distance <= 3;
       if (!isGeneralLuna) {
-        total += distance * 6.5 * 2; // 6.5 pesos per km, round trip
+        total += distance * 12.5 * 2; // 12.5 pesos per km, round trip
       }
       // If in General Luna, delivery is FREE
     }
@@ -670,9 +670,10 @@ Total Cost: ₱${calculateTotal()}
           <span className="flex items-center gap-1">
             ₿ Crypto
           </span>
-          <span className="flex items-center gap-1">
+          {/* GCash temporarily hidden - waiting for PayMongo activation */}
+          {/* <span className="flex items-center gap-1">
             📱 GCash
-          </span>
+          </span> */}
           <span className="flex items-center gap-1 text-teal-600 font-semibold">
             🏪 Pay at Pickup
           </span>
@@ -976,7 +977,7 @@ Total Cost: ₱${calculateTotal()}
       <div className="mb-6">
         <label className="block text-sm font-semibold mb-3 dark:text-slate-700">Need Delivery Service?</label>
         <div className="text-xs text-teal-600 mb-2">
-          🎉 <strong>FREE delivery</strong> in General Luna! | ₱6.50/km for other areas
+          🎉 <strong>FREE delivery</strong> in General Luna! | ₱12.50/km for other areas
         </div>
         {showDeliveryError && (
           <div className="mb-3 text-sm text-red-600 bg-red-50 p-3 rounded-lg border-2 border-red-500">
@@ -1078,7 +1079,7 @@ Total Cost: ₱${calculateTotal()}
               {isDeliveryFree() ? (
                 <span className="text-teal-600 font-semibold">🎉 FREE delivery in General Luna!</span>
               ) : (
-                <span>Delivery fee: ₱{Math.round(Number.parseFloat(formData.distance) * 6.5 * 2)} (round trip)</span>
+                <span>Delivery fee: ₱{Math.round(Number.parseFloat(formData.distance) * 12.5 * 2)} (round trip)</span>
               )}
             </div>
           )}
