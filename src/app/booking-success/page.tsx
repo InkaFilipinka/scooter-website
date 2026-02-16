@@ -68,26 +68,24 @@ function BookingSuccessContent() {
       }
 
       try {
-        // Get booking from localStorage
-        const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-        const foundBooking = bookings.find((b: BookingData) => b.id === bookingId);
+        const res = await fetch(`/api/bookings?id=${encodeURIComponent(bookingId)}`);
+        const data = await res.json();
+        const foundBooking = data.booking as BookingData | undefined;
 
         if (foundBooking) {
           setBooking(foundBooking);
 
-          // Update booking status
-          const updatedBookings = bookings.map((b: BookingData) => {
-            if (b.id === bookingId) {
-              return { ...b, status: "confirmed", paymentStatus: "paid" };
-            }
-            return b;
+          await fetch("/api/bookings", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: bookingId,
+              status: "confirmed",
+              paymentStatus: "paid",
+            }),
           });
-          localStorage.setItem("bookings", JSON.stringify(updatedBookings));
 
-          // Mark as sent to prevent duplicates
           notificationsSentRef.current = true;
-
-          // Send full notifications
           await sendNotifications(foundBooking);
         }
 

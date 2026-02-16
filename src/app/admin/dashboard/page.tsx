@@ -84,10 +84,15 @@ export default function AdminDashboard() {
     loadPaymentLinks();
   }, [router]);
 
-  const loadBookings = () => {
-    const stored = localStorage.getItem("bookings");
-    if (stored) {
-      setBookings(JSON.parse(stored));
+  const loadBookings = async () => {
+    try {
+      const response = await fetch("/api/bookings");
+      const data = await response.json();
+      if (response.ok && data.bookings) {
+        setBookings(data.bookings);
+      }
+    } catch (error) {
+      console.error("Failed to load bookings:", error);
     }
   };
 
@@ -111,19 +116,37 @@ export default function AdminDashboard() {
     router.push("/admin");
   };
 
-  const updateBookingStatus = (id: string, newStatus: Booking["status"]) => {
-    const updated = bookings.map(booking =>
-      booking.id === id ? { ...booking, status: newStatus } : booking
-    );
-    setBookings(updated);
-    localStorage.setItem("bookings", JSON.stringify(updated));
+  const updateBookingStatus = async (id: string, newStatus: Booking["status"]) => {
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (response.ok) {
+        const updated = bookings.map(booking =>
+          booking.id === id ? { ...booking, status: newStatus } : booking
+        );
+        setBookings(updated);
+      }
+    } catch (error) {
+      console.error("Failed to update booking status:", error);
+    }
   };
 
-  const deleteBooking = (id: string) => {
-    if (confirm("Are you sure you want to delete this booking?")) {
-      const updated = bookings.filter(booking => booking.id !== id);
-      setBookings(updated);
-      localStorage.setItem("bookings", JSON.stringify(updated));
+  const deleteBooking = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this booking?")) return;
+    try {
+      const response = await fetch(`/api/bookings?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setBookings(bookings.filter(booking => booking.id !== id));
+      } else {
+        console.error("Failed to delete booking");
+      }
+    } catch (error) {
+      console.error("Failed to delete booking:", error);
     }
   };
 

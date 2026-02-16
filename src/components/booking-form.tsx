@@ -323,11 +323,17 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       timestamp: new Date().toISOString(),
     };
 
-    // Save to localStorage
-    const existingBookings = localStorage.getItem("bookings");
-    const bookings = existingBookings ? JSON.parse(existingBookings) : [];
-    bookings.unshift(booking); // Add new booking at the start
-    localStorage.setItem("bookings", JSON.stringify(bookings));
+    // Save to Netlify Blobs via API
+    const createRes = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(booking),
+    });
+    if (!createRes.ok) {
+      const err = await createRes.json().catch(() => ({}));
+      alert(err.error || "Failed to save booking. Please try again.");
+      return;
+    }
 
     // Get scooter details
     const scooter = scooters.find((s) => s.id === formData.scooter);
@@ -367,10 +373,12 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     }
 
     if (!paymentResult && paymentError) {
-      // Payment failed, remove booking from localStorage
-      const bookings: SavedBooking[] = JSON.parse(localStorage.getItem("bookings") || "[]");
-      const filteredBookings = bookings.filter((b: SavedBooking) => b.id !== booking.id);
-      localStorage.setItem("bookings", JSON.stringify(filteredBookings));
+      // Payment failed, mark booking as cancelled in backend
+      await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: booking.id, status: "cancelled" }),
+      });
       alert(`Payment failed: ${paymentError}`);
       return;
     }
