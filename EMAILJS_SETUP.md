@@ -25,33 +25,12 @@ This guide will help you set up automated email notifications for your scooter r
 
 **Subject:** 🛵 New Booking Request - {{booking_id}}
 
-**Body:**
+**Body:** (use only this – the app sends the full content)
 ```
-NEW BOOKING REQUEST - PALM RIDERS
-
-Booking Details:
-----------------
-Booking ID: {{booking_id}}
-Timestamp: {{timestamp}}
-
-Customer Information:
---------------------
-Name: {{customer_name}}
-Email: {{customer_email}}
-Phone: {{customer_phone}}
-
-Rental Information:
-------------------
-Scooter: {{scooter_name}}
-Start Date: {{start_date}}
-End Date: {{end_date}}
-Delivery: {{delivery}}
-Surf Rack: {{surf_rack}}
-
-{{booking_full_summary}}
-
-Please contact the customer to confirm the booking.
+{{message}}
 ```
+
+The app sends the complete business email (booking details, customer info, rental info, daily rate, insurance, total/amount paid/amount to pay, add-ons) in the `message` variable. Your template body should contain only `{{message}}` so the email matches the PDF.
 
 4. Save and copy the **Template ID**
 

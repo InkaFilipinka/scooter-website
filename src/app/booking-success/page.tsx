@@ -194,6 +194,20 @@ function BookingSuccessContent() {
           .join(', ')
       : 'None';
 
+    const addOnLinesNtfy = (bookingData.addOns?.length ?? 0) > 0
+      ? bookingData.addOns!
+          .map((id) => {
+            const addOn = addOns.find((a) => a.id === id);
+            if (!addOn) return '';
+            const price = addOn.perDay ? addOn.price * days : addOn.price;
+            return `  - ${addOn.name}: ₱${price} - included in payment above`;
+          })
+          .filter(Boolean)
+          .join('\n')
+      : '  None selected.';
+
+    const insuranceLabelNtfy = `${getInsuranceLabel(bookingData.insurance)} - ₱${insuranceCost}`;
+
     // 1. Send ntfy.sh notification with full booking details
     try {
       const notificationMessage = `🛵 NEW BOOKING - PALM RIDERS 🌴
@@ -213,14 +227,16 @@ End: ${endDate}
 Days: ${days}
 Pickup Time: ${formatTime(bookingData.pickupTime)}
 Delivery: ${bookingData.delivery === "yes" ? `Yes (${bookingData.distance}km away)` : "Pickup at store"}
-Insurance: ${getInsuranceLabel(bookingData.insurance)} (₱${insuranceCost})
+Insurance: ${insuranceLabelNtfy}
 Surf Rack: ${bookingData.surfRack === "yes" ? "Yes (FREE)" : "No"}
-Add-ons: ${addOnsList}
+
+📦 ADD-ONS
+${addOnLinesNtfy}
 
 💰 PAYMENT
-Method: Credit Card (Stripe)
-Status: PAID ✅
-Total: ₱${bookingData.total}
+1. Total amount to pay: ₱${bookingData.total}
+2. Amount paid: ₱${bookingData.total} (Card)
+3. Amount left to pay: ₱0
 
 ⚡ Contact customer to confirm pickup!`;
 
@@ -260,14 +276,40 @@ Daily Rate: ₱${dailyRate}
 Insurance: ${insuranceLabel}
 1. Total amount to pay: ₱${bookingData.total}
 2. Amount paid: ₱${bookingData.total} (Card)
-3. Amount to pay: ₱0
+3. Amount left to pay: ₱0
 
 ADD-ONS
 ──────────────────────
 ${addOnLinesForEmail}`;
 
+      const business_email_body = `NEW BOOKING RECEIVED - PALM RIDERS
+
+BOOKING DETAILS
+──────────────────────
+Booking ID: ${bookingData.id}
+Timestamp: ${new Date().toLocaleString()}
+
+CUSTOMER INFO
+──────────────────────
+Name: ${bookingData.name}
+Email: ${bookingData.email}
+Phone: ${bookingData.phone}
+
+RENTAL INFO
+──────────────────────
+Scooter: ${scooterName}
+Start Date: ${startDate}
+End Date: ${endDate}
+Delivery: ${bookingData.delivery === "yes" ? `Yes - ${bookingData.distance}km away` : "Pickup at store"}
+Surf Rack: ${bookingData.surfRack === "yes" ? "Yes (FREE)" : "No"}
+
+${booking_full_summary}
+
+⚡ ACTION REQUIRED: Contact customer to confirm booking!`;
+
       const emailData = {
         booking_id: bookingData.id,
+        message: business_email_body,
         for_our_team,
         rental_extras,
         booking_full_summary,

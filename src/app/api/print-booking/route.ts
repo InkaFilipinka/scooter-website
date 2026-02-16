@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     draw("1. Total amount to pay: P " + total_cost, 10, true);
     const paidLine = "2. Amount paid: P " + amount_paid + (payment_method ? " (" + payment_method + (payment_reference ? (payment_method.toLowerCase().includes("card") ? " - Code: " + payment_reference : " - ID: " + payment_reference) : "") + ")" : "");
     draw(paidLine.length > 90 ? paidLine.slice(0, 87) + "..." : paidLine);
-    draw("3. Amount to pay: P " + amount_to_pay, 10, true);
+    draw("3. Amount left to pay: P " + amount_to_pay, 10, true);
     y -= 4;
     draw("Add-ons:", 10, true);
     if (addOnLines.length === 0) {

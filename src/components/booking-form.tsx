@@ -561,14 +561,40 @@ Daily Rate: ₱${dailyRate}
 Insurance: ${insuranceLabel}
 1. Total amount to pay: ₱${totalCost}
 2. Amount paid: ₱${amountNow} (${paymentMethodLabel})
-3. Amount to pay: ₱${amountToPayRemaining}
+3. Amount left to pay: ₱${amountToPayRemaining}
 
 ADD-ONS
 ──────────────────────
 ${addOnLinesForEmail}`;
 
+    const business_email_body = `NEW BOOKING RECEIVED - PALM RIDERS
+
+BOOKING DETAILS
+──────────────────────
+Booking ID: ${bookingId}
+Timestamp: ${new Date().toLocaleString()}
+
+CUSTOMER INFO
+──────────────────────
+Name: ${formData.name}
+Email: ${formData.email}
+Phone: ${formData.phone}
+
+RENTAL INFO
+──────────────────────
+Scooter: ${scooterName}
+Start Date: ${startDate}
+End Date: ${endDate}
+Delivery: ${formData.delivery === "yes" ? `Yes - ${formData.distance}km away` : "Pickup at store"}
+Surf Rack: ${formData.surfRack === "yes" ? "Yes (FREE)" : "No"}
+
+${booking_full_summary}
+
+⚡ ACTION REQUIRED: Contact customer to confirm booking!`;
+
     const emailData = {
       booking_id: bookingId,
+      message: business_email_body,
       for_our_team,
       rental_extras,
       booking_full_summary,
@@ -604,18 +630,6 @@ ${addOnLinesForEmail}`;
           }).join(', ')
         : "None";
 
-      const paymentOptionLabel = formData.paymentOption === "full" ? "Pay in Full" : formData.paymentOption === "pickup" ? "Pay at Pickup" : "Deposit";
-      const paymentLines = formData.paymentOption === "deposit"
-        ? `Option: ${paymentOptionLabel}
-Method: ${formData.paymentMethod || "—"}
-Total: ₱${totalCost}
-Deposit paid: ₱${depositAmount}
-Balance owed on pickup: ₱${balanceOwed}`
-        : `Option: ${paymentOptionLabel}
-Method: ${formData.paymentMethod || "Pay at Pickup"}
-Amount now: ₱${amountNow}
-Total: ₱${totalCost}`;
-
       const notificationMessage = `🛵 NEW BOOKING - PALM RIDERS 🌴
 
 📋 Booking ID: ${bookingId}
@@ -631,12 +645,16 @@ Start: ${startDate}
 End: ${endDate}
 Pickup Time: ${formatTime(formData.pickupTime)}
 Delivery: ${formData.delivery === "yes" ? `Yes (${formData.distance}km away)` : "Pickup at store"}
-Insurance: ${getInsuranceLabel()} (₱${calculateInsuranceCost()})
+Insurance: ${insuranceLabel}
 Surf Rack: ${formData.surfRack === "yes" ? "Yes (FREE)" : "No"}
-Add-ons: ${addOnsListSimple}
+
+📦 ADD-ONS
+${addOnLinesForEmail}
 
 💰 PAYMENT
-${paymentLines}
+1. Total amount to pay: ₱${totalCost}
+2. Amount paid: ₱${amountNow} (${paymentMethodLabel})
+3. Amount left to pay: ₱${amountToPayRemaining}
 
 ⚡ Contact customer to confirm!`;
 
