@@ -12,7 +12,7 @@ interface CryptoPaymentModalProps {
   bookingId: string;
   customerEmail: string;
   customerName: string;
-  onSuccess: () => void;
+  onSuccess: (txHash?: string) => void;
   onError: (error: string) => void;
 }
 
@@ -689,7 +689,7 @@ export function CryptoPaymentModal({
       console.log('Transaction confirmed!');
 
       setStep('success');
-      onSuccess();
+      onSuccess(tx.hash);
     } catch (err: unknown) {
       console.error('USDC payment error:', err);
       const error = err as { message?: string; code?: string };

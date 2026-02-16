@@ -76,6 +76,16 @@ function BookingSuccessContent() {
         if (foundBooking) {
           setBooking(foundBooking);
 
+          let amount_paid: number | undefined;
+          try {
+            const sessionRes = await fetch(`/api/stripe-session?session_id=${encodeURIComponent(sessionId!)}`);
+            if (sessionRes.ok) {
+              const sessionData = await sessionRes.json();
+              amount_paid = sessionData.amount_paid;
+            }
+          } catch (_) { /* use booking total if session fetch fails */ }
+          if (amount_paid == null) amount_paid = foundBooking.total;
+
           await fetch("/api/bookings", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -83,6 +93,9 @@ function BookingSuccessContent() {
               id: bookingId,
               status: "confirmed",
               paymentStatus: "paid",
+              amount_paid,
+              payment_method: "Card",
+              payment_reference: sessionId,
             }),
           });
 

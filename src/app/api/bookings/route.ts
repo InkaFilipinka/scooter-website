@@ -104,11 +104,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH - Update a booking (e.g. status, paidAt)
+// PATCH - Update a booking (e.g. status, paidAt, amount_paid, payment_method, payment_reference)
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, status, paidAt, paymentStatus } = body;
+    const { id, status, paidAt, paymentStatus, amount_paid, payment_method, payment_reference } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -127,6 +127,9 @@ export async function PATCH(request: NextRequest) {
     if (status) booking.status = status;
     if (paidAt) booking.paidAt = paidAt;
     if (paymentStatus !== undefined) booking.paymentStatus = paymentStatus;
+    if (typeof amount_paid === 'number') booking.amount_paid = amount_paid;
+    if (payment_method !== undefined) booking.payment_method = String(payment_method);
+    if (payment_reference !== undefined) booking.payment_reference = String(payment_reference);
 
     await store.setJSON(id, booking);
 

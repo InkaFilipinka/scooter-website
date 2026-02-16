@@ -371,12 +371,16 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       return;
     }
 
-    // Create booking object
+    // Create booking object (total = full rental amount so PDF always shows correct total)
+    const fullTotal = Math.round(calculateTotal());
     const booking = {
       id: `BK-${Date.now()}`,
       ...formData,
       addOns: selectedAddOnIds,
-      total: getPaymentAmount(),
+      total: fullTotal,
+      amount_paid: 0,
+      payment_method: formData.paymentOption === "pickup" ? "Pay at collection (cash)" : "",
+      payment_reference: "",
       status: "pending" as const,
       timestamp: new Date().toISOString(),
     };
@@ -455,8 +459,20 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
   };
 
   // Handler for successful crypto payment from modal
-  const handleCryptoPaymentSuccess = async () => {
-    // Get scooter details
+  const handleCryptoPaymentSuccess = async (txHash?: string) => {
+    await fetch("/api/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: currentBookingId,
+        status: "confirmed",
+        paymentStatus: "paid",
+        amount_paid: Math.round(getPaymentAmount()),
+        payment_method: "Crypto",
+        payment_reference: txHash ?? "",
+      }),
+    });
+
     const scooter = scooters.find((s) => s.id === formData.scooter);
     const scooterName = scooter?.name || "Scooter";
     const startDate = new Date(formData.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -466,7 +482,6 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
 
     setSubmitted(true);
     setIsCryptoModalOpen(false);
-    // Don't auto-close - let user close manually
   };
 
   const sendNotifications = async (bookingId: string, scooterName: string, startDate: string, endDate: string) => {
