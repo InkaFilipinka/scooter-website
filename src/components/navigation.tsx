@@ -17,7 +17,7 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   const navLinks = [
-    { href: "/#scooters", label: t('nav.scooters') },
+    { href: "/#prices", label: t('nav.scooters') },
     { href: "/#services", label: t('nav.services') },
     { href: "/#reviews", label: t('nav.reviews') },
     { href: "/#faq", label: t('nav.faq') },

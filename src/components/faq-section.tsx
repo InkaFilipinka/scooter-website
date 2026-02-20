@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/language-context';
 
 interface FAQ {
   id: number;
+  anchor?: string; // For deep links (e.g. Google Ads site links)
   question: string;
   answer: string;
   questionTl: string;
@@ -71,6 +72,7 @@ Mabilis na delivery sa napili mong lugar. Flexible ang return—i-drop off kahit
   },
   {
     id: 4,
+    anchor: 'faq-insurance',
     question: 'What insurance options are available?',
     questionTl: 'Anong insurance options ang available?',
     answer: 'We offer 2 insurance options: Basic at ₱50/day and Premium at ₱100/day. Both provide coverage for accidents and damages. Premium offers higher coverage limits. We strongly recommend at least Basic insurance.',
@@ -106,6 +108,7 @@ Mabilis na delivery sa napili mong lugar. Flexible ang return—i-drop off kahit
   },
   {
     id: 9,
+    anchor: 'faq-payments',
     question: 'What payment methods do you accept?',
     questionTl: 'Anong payment methods ang tinatanggap ninyo?',
     answer: 'We accept Credit Cards (Visa, Mastercard), GCash, and Cryptocurrency (USDC/BUSD on Polygon, Ethereum, or BSC). You can pay in full or pay a deposit to reserve your scooter. Full payment is required upon pickup if you choose the deposit option.',
@@ -187,7 +190,8 @@ export function FAQSection() {
           {faqs.map((faq) => (
             <div
               key={faq.id}
-              className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow"
+              id={faq.anchor}
+              className={`bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow ${faq.anchor ? 'scroll-mt-24' : ''}`}
             >
               <button
                 onClick={() => toggleFAQ(faq.id)}

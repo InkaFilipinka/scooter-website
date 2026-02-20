@@ -1207,7 +1207,7 @@ ${addOnLinesForEmail}
         </div>
       )}
 
-      <div className="mb-6">
+      <div id="pick-location-map" className="mb-6 scroll-mt-24">
         <label className="block text-sm font-semibold mb-3 dark:text-slate-700">Need Delivery Service?</label>
         {showDeliveryError && (
           <div className="mb-3 text-sm text-red-600 bg-red-50 p-3 rounded-lg border-2 border-red-500">

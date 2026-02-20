@@ -129,8 +129,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Scooters Section */}
-      <section id="scooters" className="py-20 bg-slate-50 dark:bg-slate-800">
+      {/* Scooters Section - #prices for Google Ads site links */}
+      <section id="prices" className="py-20 bg-slate-50 dark:bg-slate-800 scroll-mt-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 dark:text-slate-200">{t('scooters.title')}</h2>
