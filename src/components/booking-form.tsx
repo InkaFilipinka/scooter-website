@@ -103,33 +103,41 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     return `${hour}:00 AM`;
   };
 
-  // Get tomorrow's date for min date validation
-  const getTomorrowDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
+  // Get today's date in local timezone (YYYY-MM-DD)
+  const getTodayDate = () => {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   };
 
   // Get minimum end date (day after start date)
   const getMinEndDate = () => {
-    if (!formData.startDate) return getTomorrowDate();
-    const startDate = new Date(formData.startDate);
-    startDate.setDate(startDate.getDate() + 1);
-    return startDate.toISOString().split('T')[0];
+    if (!formData.startDate) return getTodayDate();
+    const d = new Date(formData.startDate + "T12:00:00");
+    d.setDate(d.getDate() + 1);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   };
 
-  // Validate date range
+  // Validate date range (allow today with 30-min pickup buffer)
   const validateDates = (startDate: string, endDate: string): string | null => {
     if (!startDate || !endDate) return null;
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const start = new Date(startDate + "T00:00:00");
+    const end = new Date(endDate + "T00:00:00");
+    const now = new Date();
+    const todayStr = getTodayDate();
 
-    // Check if start date is in the past
-    if (start <= today) {
-      return "Start date must be at least tomorrow";
+    if (startDate < todayStr) {
+      return "Start date cannot be in the past";
+    }
+
+    // Same-day: pickup (start + pickupTime) must be at least 30 min from now
+    if (startDate === todayStr) {
+      const pickupTime = formData.pickupTime ?? 13;
+      const pickupDt = new Date(startDate + "T" + String(pickupTime).padStart(2, "0") + ":00:00");
+      const minPickup = new Date(now.getTime() + 30 * 60 * 1000);
+      if (pickupDt < minPickup) {
+        return "Pickup time must be at least 30 minutes from now. Please select a later pickup time.";
+      }
     }
 
     // Check if end date is before or same as start date
@@ -154,7 +162,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     } else {
       setDateError(null);
     }
-  }, [formData.startDate, formData.endDate]);
+  }, [formData.startDate, formData.endDate, formData.pickupTime]);
 
   // Effect to check pool availability
   useEffect(() => {
@@ -999,7 +1007,7 @@ ${addOnLinesForEmail}
             id="startDate"
             name="startDate"
             required
-            min={getTomorrowDate()}
+            min={getTodayDate()}
             value={formData.startDate}
             onChange={(e) => {
               handleChange(e);
