@@ -109,6 +109,15 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   };
 
+  // Minimum pickup hour when start date is today (now + 2h, rounded up)
+  const getMinPickupHour = () => {
+    const now = new Date();
+    const minPickup = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    let h = minPickup.getHours();
+    if (minPickup.getMinutes() > 0 || minPickup.getSeconds() > 0) h += 1;
+    return Math.max(8, Math.min(22, h));
+  };
+
   // Get minimum end date (day after start date)
   const getMinEndDate = () => {
     if (!formData.startDate) return getTodayDate();
@@ -130,13 +139,13 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       return "Start date cannot be in the past";
     }
 
-    // Same-day: pickup (start + pickupTime) must be at least 30 min from now
+    // Same-day: pickup (start + pickupTime) must be at least 2h from now (effect auto-adjusts slider)
     if (startDate === todayStr) {
       const pickupTime = formData.pickupTime ?? 13;
       const pickupDt = new Date(startDate + "T" + String(pickupTime).padStart(2, "0") + ":00:00");
-      const minPickup = new Date(now.getTime() + 30 * 60 * 1000);
+      const minPickup = new Date(now.getTime() + 2 * 60 * 60 * 1000);
       if (pickupDt < minPickup) {
-        return "Pickup time must be at least 30 minutes from now. Please select a later pickup time.";
+        return "Pickup time must be at least 2 hours from now.";
       }
     }
 
@@ -153,6 +162,15 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
 
     return null;
   };
+
+  // When user picks today, auto-adjust pickup time to now + 2h if current selection is too early
+  useEffect(() => {
+    if (formData.startDate !== getTodayDate()) return;
+    const minHour = getMinPickupHour();
+    if ((formData.pickupTime ?? 13) < minHour) {
+      setFormData((prev) => ({ ...prev, pickupTime: minHour }));
+    }
+  }, [formData.startDate]);
 
   // Effect to validate dates when they change
   useEffect(() => {
@@ -1084,7 +1102,7 @@ ${addOnLinesForEmail}
             type="range"
             id="pickupTime"
             name="pickupTime"
-            min={8}
+            min={formData.startDate === getTodayDate() ? getMinPickupHour() : 8}
             max={22}
             step={1}
             value={formData.pickupTime}

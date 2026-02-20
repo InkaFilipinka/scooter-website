@@ -466,15 +466,15 @@ export default function Home() {
               <p className="text-slate-400 text-sm mb-4">
                 Explore the beautiful island of Siargao at your own pace
               </p>
-              <div className="flex items-center justify-center gap-4 text-xs text-slate-500">
+              <div className="flex items-center justify-center gap-1 text-xs text-slate-500">
                 <a
                   href="/admin"
                   className="hover:text-slate-300 transition-colors"
+                  aria-label="Admin"
                 >
-                  Admin Login
+                  ©
                 </a>
-                <span>|</span>
-                <span>&copy; {new Date().getFullYear()} Palm Riders. All rights reserved.</span>
+                <span> {new Date().getFullYear()} Palm Riders. All rights reserved.</span>
               </div>
             </div>
           </div>
