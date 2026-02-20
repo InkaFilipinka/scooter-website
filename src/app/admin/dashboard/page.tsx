@@ -30,6 +30,7 @@ interface Booking {
   email: string;
   phone: string;
   scooter: string;
+  quantity?: number;
   startDate: string;
   endDate: string;
   pickupLocation: string;
@@ -64,6 +65,8 @@ export default function AdminDashboard() {
   const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [poolAvailable, setPoolAvailable] = useState<number>(4);
+  const [isSavingPool, setIsSavingPool] = useState(false);
   const router = useRouter();
 
   // Payment link form state
@@ -85,6 +88,11 @@ export default function AdminDashboard() {
     loadBookings();
     // Load payment links
     loadPaymentLinks();
+    // Load pool
+    fetch("/api/pool")
+      .then((r) => r.json())
+      .then((data) => typeof data.available === "number" && setPoolAvailable(data.available))
+      .catch(() => {});
   }, [router]);
 
   const loadBookings = async () => {
@@ -134,6 +142,24 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Failed to update booking status:", error);
+    }
+  };
+
+  const updatePool = async (value: number) => {
+    setPoolAvailable(value);
+    setIsSavingPool(true);
+    try {
+      const res = await fetch("/api/pool", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ available: value }),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+    } catch (err) {
+      console.error("Failed to update pool:", err);
+      fetch("/api/pool").then((r) => r.json()).then((d) => setPoolAvailable(d.available ?? 4));
+    } finally {
+      setIsSavingPool(false);
     }
   };
 
@@ -320,6 +346,31 @@ export default function AdminDashboard() {
 
         {activeTab === "bookings" ? (
           <>
+            {/* Pool control */}
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <Bike className="w-5 h-5 text-teal-600" />
+                <h2 className="text-lg font-bold text-slate-900">Available Scooters</h2>
+              </div>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min={0}
+                  max={4}
+                  step={1}
+                  value={poolAvailable}
+                  onChange={(e) => updatePool(Number(e.target.value))}
+                  className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                />
+                <span className="text-2xl font-bold text-teal-600 min-w-[3rem]">{poolAvailable}</span>
+                <span className="text-slate-600 text-sm">scooters available</span>
+                {isSavingPool && <Loader2 className="w-5 h-5 animate-spin text-slate-400" />}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                Adjust when scooters are rented or returned. New bookings auto-decrement this value.
+              </p>
+            </div>
+
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -402,7 +453,10 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-2 text-slate-600">
                         <Bike className="w-4 h-4" />
-                        <span className="text-sm font-semibold">{booking.scooter}</span>
+                        <span className="text-sm font-semibold">
+                          {booking.scooter}
+                          {(booking.quantity ?? 1) > 1 && ` × ${booking.quantity}`}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-slate-600">
                         <Calendar className="w-4 h-4" />

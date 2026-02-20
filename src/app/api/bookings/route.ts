@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStore } from '@netlify/blobs';
+import { decrementPool, getPool, setPool } from '@/lib/pool';
 
 // Booking shape matches form + admin (allow extra fields from form)
 interface Booking {
@@ -8,6 +9,7 @@ interface Booking {
   email: string;
   phone: string;
   scooter: string;
+  quantity?: number;
   startDate: string;
   endDate: string;
   pickupLocation?: string;
@@ -22,8 +24,6 @@ interface Booking {
   paymentStatus?: string;
   [key: string]: unknown;
 }
-
-const TOTAL_STOCK = 4;
 
 // GET - List all bookings, get one by id, or check availability for a date range
 export async function GET(request: NextRequest) {
@@ -52,18 +52,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (start && end) {
-      const startTime = new Date(start).getTime();
-      const endTime = new Date(end).getTime();
-      const inUse = bookings.filter((b) => {
-        if (b.status === 'cancelled') return false;
-        const bStart = new Date(b.startDate).getTime();
-        const bEnd = new Date(b.endDate).getTime();
-        return bStart <= endTime && bEnd >= startTime;
-      }).length;
+      const pool = await getPool();
       return NextResponse.json({
-        inUse,
-        total: TOTAL_STOCK,
-        atCapacity: inUse >= TOTAL_STOCK,
+        available: pool.available,
+        atCapacity: pool.available < 1,
       });
     }
 
@@ -91,10 +83,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const store = getStore('bookings');
-    await store.setJSON(body.id, body);
+    const quantity = Math.max(1, Math.min(4, body.quantity ?? 1));
+    body.quantity = quantity;
 
-    return NextResponse.json({ success: true, booking: body });
+    const pool = await getPool();
+    if (pool.available < quantity) {
+      return NextResponse.json(
+        { error: `Only ${pool.available} scooter(s) available. Please reduce quantity or try different dates.` },
+        { status: 400 }
+      );
+    }
+
+    const afterDecrement = await decrementPool(quantity);
+    if (!afterDecrement) {
+      return NextResponse.json(
+        { error: 'Not enough scooters available. Please try again.' },
+        { status: 400 }
+      );
+    }
+
+    try {
+      const store = getStore('bookings');
+      await store.setJSON(body.id, body);
+      return NextResponse.json({ success: true, booking: body });
+    } catch (createError) {
+      await setPool(afterDecrement.available + quantity);
+      throw createError;
+    }
   } catch (error) {
     console.error('Error creating booking:', error);
     return NextResponse.json(

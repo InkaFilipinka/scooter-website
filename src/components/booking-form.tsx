@@ -32,6 +32,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     email: "",
     phone: "",
     scooter: "",
+    quantity: 1,
     startDate: "",
     endDate: "",
     pickupTime: 13, // Default 1pm (range: 8-22 for 8am-10pm)
@@ -56,8 +57,9 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [currentBookingId, setCurrentBookingId] = useState<string>('');
   const [pendingSubmit, setPendingSubmit] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
-  const [atCapacity, setAtCapacity] = useState(false);
+  const [availableScooters, setAvailableScooters] = useState<number | null>(null);
 
   const sectionContactRef = useRef<HTMLDivElement>(null);
   const sectionDatesRef = useRef<HTMLDivElement>(null);
@@ -76,6 +78,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       email: "",
       phone: "",
       scooter: "",
+      quantity: 1,
       startDate: "",
       endDate: "",
       pickupTime: 13,
@@ -153,26 +156,25 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     }
   }, [formData.startDate, formData.endDate]);
 
-  // Effect to check stock availability for selected dates
+  // Effect to check pool availability
   useEffect(() => {
-    if (!formData.startDate || !formData.endDate || dateError) {
-      setAtCapacity(false);
-      return;
-    }
     const check = async () => {
       try {
-        const res = await fetch(
-          `/api/bookings?start=${encodeURIComponent(formData.startDate)}&end=${encodeURIComponent(formData.endDate)}`
-        );
+        const res = await fetch("/api/pool");
         const data = await res.json();
-        if (res.ok && data.atCapacity) setAtCapacity(true);
-        else setAtCapacity(false);
+        if (res.ok && typeof data.available === "number") {
+          setAvailableScooters(data.available);
+        } else {
+          setAvailableScooters(null);
+        }
       } catch {
-        setAtCapacity(false);
+        setAvailableScooters(null);
       }
     };
     check();
-  }, [formData.startDate, formData.endDate, dateError]);
+  }, []);
+
+  const atCapacity = availableScooters !== null && availableScooters < formData.quantity;
 
   // Check if delivery options should be enabled
   const canSelectDelivery = () => {
@@ -345,6 +347,12 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       return;
     }
 
+    if (atCapacity) {
+      alert(`Only ${availableScooters} scooter(s) available. Please reduce quantity or try again later.`);
+      scrollToSection(sectionContactRef);
+      return;
+    }
+
     // Show add-ons modal before proceeding to payment
     setPendingSubmit(true);
     setIsAddOnsModalOpen(true);
@@ -371,6 +379,8 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       return;
     }
 
+    setIsSubmitting(true);
+    try {
     // Create booking object (total = full rental amount so PDF always shows correct total)
     const fullTotal = Math.round(calculateTotal());
     const booking = {
@@ -398,6 +408,8 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
       return;
     }
 
+    fetch("/api/pool").then((r) => r.json()).then((d) => typeof d.available === "number" && setAvailableScooters(d.available));
+
     // Get scooter details
     const scooter = scooters.find((s) => s.id === formData.scooter);
     const scooterName = scooter?.name || "Scooter";
@@ -409,7 +421,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     // Handle pay-at-pickup option (no payment processing needed)
     if (formData.paymentOption === "pickup") {
       // No payment required - just send notifications
-      await sendNotifications(booking.id, scooterName, startDate, endDate);
+      await sendNotifications(booking.id, scooterName, startDate, endDate, selectedAddOnIds);
 
       // Track booking submission in Google Analytics
       const days = Math.ceil((new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) / (1000 * 60 * 60 * 24));
@@ -448,7 +460,7 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     }
 
     // Send automated email and WhatsApp notifications
-    await sendNotifications(booking.id, scooterName, startDate, endDate);
+    await sendNotifications(booking.id, scooterName, startDate, endDate, selectedAddOnIds);
 
     // Track booking submission in Google Analytics
     const days = Math.ceil((new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) / (1000 * 60 * 60 * 24));
@@ -456,6 +468,9 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
 
     setSubmitted(true);
     // Don't auto-close - let user close manually
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Handler for successful crypto payment from modal
@@ -484,7 +499,8 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     setIsCryptoModalOpen(false);
   };
 
-  const sendNotifications = async (bookingId: string, scooterName: string, startDate: string, endDate: string) => {
+  const sendNotifications = async (bookingId: string, scooterName: string, startDate: string, endDate: string, addOnIdsOverride?: string[]) => {
+    const addOnIdsToUse = addOnIdsOverride ?? selectedAddOns;
     // EmailJS Configuration
     const SERVICE_ID = 'service_64m9p4r'; // Updated to new service
     const TEMPLATE_ID_CUSTOMER = 'template_eab09xr';
@@ -508,8 +524,8 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
 
     // Build add-ons list
     const days = getRentalDays();
-    const addOnsList = selectedAddOns.length > 0
-      ? selectedAddOns.map(id => {
+    const addOnsList = addOnIdsToUse.length > 0
+      ? addOnIdsToUse.map(id => {
           const addOn = addOns.find(a => a.id === id);
           if (!addOn) return '';
           const price = addOn.perDay ? addOn.price * days : addOn.price;
@@ -522,8 +538,8 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     const depositAmount = formData.paymentOption === "deposit" ? amountNow : 0;
     const balanceOwed = formData.paymentOption === "deposit" ? Math.round(totalCost - depositAmount) : 0;
 
-    const addOnsListForEmail = selectedAddOns.length > 0
-      ? selectedAddOns.map(id => {
+    const addOnsListForEmail = addOnIdsToUse.length > 0
+      ? addOnIdsToUse.map(id => {
           const addOn = addOns.find(a => a.id === id);
           if (!addOn) return '';
           const price = addOn.perDay ? addOn.price * days : addOn.price;
@@ -546,8 +562,8 @@ export function BookingForm({ scooters }: { scooters: Scooter[] }) {
     const amountToPayRemaining = Math.max(0, totalCost - amountNow);
     const paymentMethodLabel = formData.paymentOption === "pickup" ? "Pay at collection (cash)" : formData.paymentOption === "deposit" ? (formData.paymentMethod || "Online") : (formData.paymentMethod || "Online");
     const addOnStatus = formData.paymentOption === "pickup" ? "to be paid on collection" : "included in payment above";
-    const addOnLinesForEmail = selectedAddOns.length > 0
-      ? selectedAddOns.map(id => {
+    const addOnLinesForEmail = addOnIdsToUse.length > 0
+      ? addOnIdsToUse.map(id => {
           const addOn = addOns.find(a => a.id === id);
           if (!addOn) return "";
           const price = addOn.perDay ? addOn.price * days : addOn.price;
@@ -620,16 +636,6 @@ ${booking_full_summary}
     };
 
     try {
-      // Build simple add-ons list
-      const addOnsListSimple = selectedAddOns.length > 0
-        ? selectedAddOns.map(id => {
-            const addOn = addOns.find(a => a.id === id);
-            if (!addOn) return '';
-            const price = addOn.perDay ? addOn.price * days : addOn.price;
-            return `${addOn.name} (₱${price})`;
-          }).join(', ')
-        : "None";
-
       const notificationMessage = `🛵 NEW BOOKING - PALM RIDERS 🌴
 
 📋 Booking ID: ${bookingId}
@@ -683,10 +689,11 @@ ${addOnLinesForEmail}
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    const parsed = type === "range" || name === "quantity" ? Number(value) : value;
 
     setFormData({
       ...formData,
-      [name]: type === "range" ? Number(value) : value,
+      [name]: parsed,
     });
 
     // Track payment method selection in Google Analytics
@@ -711,19 +718,20 @@ ${addOnLinesForEmail}
     }, 0);
   };
 
-  // Calculate insurance cost based on selection
+  // Calculate insurance cost based on selection (per scooter per day)
   const calculateInsuranceCost = () => {
     if (!formData.startDate || !formData.endDate) return 0;
     const days = getRentalDays();
-    if (formData.insurance === "full") return 100 * days;
-    if (formData.insurance === "limited") return 50 * days;
+    const qty = formData.quantity ?? 1;
+    if (formData.insurance === "full") return 100 * days * qty;
+    if (formData.insurance === "limited") return 50 * days * qty;
     return 0; // No insurance
   };
 
   // Get insurance label for display
   const getInsuranceLabel = () => {
-    if (formData.insurance === "full") return "Full Coverage";
-    if (formData.insurance === "limited") return "Limited Coverage";
+    if (formData.insurance === "full") return "Premium";
+    if (formData.insurance === "limited") return "Basic";
     return "No Insurance";
   };
 
@@ -731,8 +739,9 @@ ${addOnLinesForEmail}
     if (!formData.scooter || !formData.startDate || !formData.endDate) return 0;
 
     const days = getRentalDays();
+    const qty = formData.quantity ?? 1;
     const pricePerDay = getPricePerDay(formData.scooter, days);
-    let total = pricePerDay * days;
+    let total = pricePerDay * days * qty;
 
     // Add insurance cost
     total += calculateInsuranceCost();
@@ -767,8 +776,9 @@ ${addOnLinesForEmail}
   const calculateDeposit = () => {
     if (!formData.scooter || !formData.startDate || !formData.endDate) return 0;
     const days = getRentalDays();
+    const qty = formData.quantity ?? 1;
     const pricePerDay = getPricePerDay(formData.scooter, days);
-    return Math.round(pricePerDay); // One day rent at the current tier rate
+    return Math.round(pricePerDay * qty); // One day rent per scooter
   };
 
   const getPaymentAmount = () => {
@@ -954,6 +964,32 @@ ${addOnLinesForEmail}
           </select>
         </div>
 
+        <div>
+          <label htmlFor="quantity" className="block text-sm font-semibold mb-2 dark:text-slate-700">
+            Number of Scooters
+          </label>
+          <select
+            id="quantity"
+            name="quantity"
+            required
+            value={formData.quantity}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent dark:text-slate-700"
+          >
+            {[1, 2, 3, 4].map((n) => (
+              <option key={n} value={n} disabled={availableScooters !== null && n > availableScooters}>
+                {n} {n === 1 ? "scooter" : "scooters"}
+                {availableScooters !== null && n > availableScooters ? " (not available)" : ""}
+              </option>
+            ))}
+          </select>
+          {availableScooters !== null && (
+            <p className="text-xs text-slate-600 mt-1">
+              {availableScooters} available
+            </p>
+          )}
+        </div>
+
         <div ref={sectionDatesRef}>
           <label htmlFor="startDate" className="block text-sm font-semibold mb-2 dark:text-slate-700">
             Start Date
@@ -1005,6 +1041,18 @@ ${addOnLinesForEmail}
       {dateError && (
         <div className="mb-4 p-3 bg-red-50 border-2 border-red-400 rounded-lg text-red-700 text-sm">
           {dateError}
+        </div>
+      )}
+
+      {/* At capacity warning */}
+      {atCapacity && (
+        <div className="mb-4 p-4 bg-amber-50 border-2 border-amber-500 rounded-lg text-amber-800">
+          <div className="font-semibold flex items-center gap-2 mb-1">
+            <span>⚠️</span> Not enough scooters available
+          </div>
+          <p className="text-sm">
+            Only {availableScooters} scooter(s) available. Reduce quantity to continue.
+          </p>
         </div>
       )}
 
@@ -1062,7 +1110,7 @@ ${addOnLinesForEmail}
           </div>
 
           <div className="space-y-3">
-            {/* Full Coverage */}
+            {/* Premium */}
             <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${
               formData.insurance === "full"
                 ? "border-teal-500 bg-gradient-to-r from-teal-50 to-emerald-50 shadow-md"
@@ -1078,17 +1126,17 @@ ${addOnLinesForEmail}
               />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <div className="font-semibold text-slate-800">Full Coverage</div>
+                  <div className="font-semibold text-slate-800">Premium</div>
                   <div className="font-bold text-teal-600">₱100/day</div>
                 </div>
                 <div className="text-sm text-slate-600 mt-1">
-                  No deductible
+                  Higher coverage
                   <span className="ml-2 text-xs bg-teal-500 text-white px-2 py-0.5 rounded-full">Most Popular</span>
                 </div>
               </div>
             </label>
 
-            {/* Limited Coverage */}
+            {/* Basic */}
             <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${
               formData.insurance === "limited"
                 ? "border-teal-500 bg-gradient-to-r from-teal-50 to-emerald-50 shadow-md"
@@ -1104,11 +1152,11 @@ ${addOnLinesForEmail}
               />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <div className="font-semibold text-slate-800">Limited Coverage</div>
+                  <div className="font-semibold text-slate-800">Basic</div>
                   <div className="font-bold text-teal-600">₱50/day</div>
                 </div>
                 <div className="text-sm text-slate-600 mt-1">
-                  ₱3,000 deductible
+                  Standard coverage
                 </div>
               </div>
             </label>
@@ -1230,8 +1278,8 @@ ${addOnLinesForEmail}
           {/* Pricing Tier Info */}
           <div className="text-sm text-teal-700 dark:text-teal-800 mt-2 p-2 bg-white/50 rounded-lg">
             <div className="flex justify-between">
-              <span>{getRentalDays()} days × ₱{getCurrentPricePerDay()}/day</span>
-              <span className="font-semibold">₱{getRentalDays() * getCurrentPricePerDay()}</span>
+              <span>{getRentalDays()} days × ₱{getCurrentPricePerDay()}/day × {(formData.quantity ?? 1)} {(formData.quantity ?? 1) === 1 ? "scooter" : "scooters"}</span>
+              <span className="font-semibold">₱{getRentalDays() * getCurrentPricePerDay() * (formData.quantity ?? 1)}</span>
             </div>
             <div className="text-xs text-teal-600 mt-1">
               Rate tier: {getPricingTierLabel(getRentalDays())} {getRentalDays() >= 28 && "✨"}
@@ -1437,9 +1485,9 @@ ${addOnLinesForEmail}
 
       <button
         type="submit"
-        disabled={isProcessingPayment}
+        disabled={isProcessingPayment || atCapacity}
         className={`w-full font-bold py-4 px-6 rounded-lg text-lg transition-all shadow-lg hover:shadow-xl ${
-          isProcessingPayment
+          isProcessingPayment || atCapacity
             ? 'bg-gray-400 cursor-not-allowed'
             : 'bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white'
         }`}
@@ -1458,6 +1506,19 @@ ${addOnLinesForEmail}
           '🏝️ Submit Booking & Pay 🌴'
         )}
       </button>
+
+      {/* Full-page overlay while submitting (blocks clicks until success modal appears) */}
+      {isSubmitting && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm" aria-hidden="true">
+          <div className="flex flex-col items-center gap-4 text-white">
+            <svg className="animate-spin h-12 w-12" viewBox="0 0 24 24" aria-label="Loading">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            <span className="font-medium">Confirming your booking...</span>
+          </div>
+        </div>
+      )}
 
       {/* Success Modal */}
       {submitted && (

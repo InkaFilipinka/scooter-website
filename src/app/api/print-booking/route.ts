@@ -33,13 +33,14 @@ export async function GET(request: NextRequest) {
     let total_cost = Number(booking.total ?? 0);
     const amount_paid = Number(booking.amount_paid ?? 0);
     const addOnIds = (booking.addOns as string[] | undefined) ?? [];
+    const quantity = Math.max(1, Math.min(4, Number(booking.quantity ?? 1)));
     const days = booking.startDate && booking.endDate
       ? Math.ceil((new Date(String(booking.endDate)).getTime() - new Date(String(booking.startDate)).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
     const insuranceOption = String(booking.insurance ?? "none").toLowerCase();
-    const insuranceCost = days * (insuranceOption === "full" ? 100 : insuranceOption === "limited" ? 50 : 0);
+    const insuranceCost = days * quantity * (insuranceOption === "full" ? 100 : insuranceOption === "limited" ? 50 : 0);
     if (total_cost === 0 && days > 0 && scooter_id) {
-      const baseRate = getPricePerDay(scooter_id, days) * days;
+      const baseRate = getPricePerDay(scooter_id, days) * days * quantity;
       const addOnsTotal = addOnIds.reduce((sum, aid) => {
         const addOn = addOns.find((a) => a.id === aid);
         if (!addOn) return sum;
@@ -89,7 +90,8 @@ export async function GET(request: NextRequest) {
     draw("Id type and serial number       _________________________________________");
     y -= 6;
     draw("3. Scooter Information", 11, true);
-    draw("Make / Model / Color / Plate Number    " + scooter_name + " / _________________________");
+    const scooterDisplay = quantity > 1 ? `${scooter_name} × ${quantity}` : scooter_name;
+    draw("Make / Model / Color / Plate Number    " + scooterDisplay + " / _________________________");
     draw("Condition Before Rental                3 months old, good.");
     y -= 6;
     draw("4. Rental Terms & Fees", 11, true);

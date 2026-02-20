@@ -18,8 +18,8 @@ const translations: Record<string, Record<Language, string>> = {
   'nav.book': { en: 'Book Now', tl: 'Mag-book Ngayon' },
   // Hero
   'hero.title': { en: 'Explore Siargao on Two Wheels', tl: 'Libutin ang Siargao sa Dalawang Gulong' },
-  'hero.subtitle': { en: 'Number One Scooter Rentals in Siargao Del Norte', tl: 'Numero Unong Pag-upa ng Scooter sa Siargao del Norte' },
-  'hero.serving': { en: 'Serving whole Siargao del Norte Island. General Luna, Dapa, Del Carmen and others', tl: 'Naglilingkod sa buong Siargao del Norte Island. General Luna, Dapa, Del Carmen at iba pa' },
+  'hero.subtitle': { en: 'The Most Convenient Scooter Rental in Siargao', tl: 'Ang Pinaka-Convenient na Scooter Rental sa Siargao' },
+  'hero.serving': { en: 'Book your scooter in minutes and select your pickup spot on Google Maps. We deliver anywhere in Siargao including General Luna, Dapa, Del Carmen and all island locations. Fast, flexible and hassle-free rentals for travelers.', tl: 'Mag-book ng scooter sa loob ng ilang minuto at piliin ang pickup spot sa Google Maps. Nagdedeliver kami kahit saan sa Siargao kasama ang General Luna, Dapa, Del Carmen at lahat ng island locations. Mabilis, flexible at walang hassle na rentals para sa mga traveler.' },
   'hero.bookButton': { en: 'Book Your Scooter Now', tl: 'Mag-book ng Scooter Ngayon' },
   // Scooters Section
   'scooters.title': { en: 'Our Fleet', tl: 'Aming Mga Scooter' },
@@ -98,7 +98,7 @@ const translations: Record<string, Record<Language, string>> = {
   'faq.title': { en: 'Frequently Asked Questions', tl: 'Mga Madalas Itanong' },
   'faq.subtitle': { en: 'Everything you need to know about renting with us', tl: 'Lahat ng kailangan mong malaman tungkol sa pag-upa' },
   'faq.stillQuestions': { en: 'Still have questions?', tl: 'May iba pang tanong?' },
-  'faq.help247': { en: "We're here to help 24/7!", tl: 'Nandito kami 24/7!' },
+  'faq.help247': { en: "Contact us during opening times and we'll help you!", tl: 'Kontakin kami sa opening hours at tutulungan ka namin!' },
   'faq.chatWhatsApp': { en: 'Chat on WhatsApp', tl: 'Mag-chat sa WhatsApp' },
   // Footer
   'footer.address': { en: 'Address', tl: 'Address' },

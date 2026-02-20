@@ -40,8 +40,8 @@ const formatTime = (hour: number): string => {
 
 // Get insurance label
 const getInsuranceLabel = (insurance: string): string => {
-  if (insurance === "full") return "Full Coverage";
-  if (insurance === "limited") return "Limited Coverage";
+  if (insurance === "full") return "Premium";
+  if (insurance === "limited") return "Basic";
   return "No Insurance";
 };
 

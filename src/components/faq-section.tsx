@@ -14,18 +14,53 @@ interface FAQ {
 
 const faqs: FAQ[] = [
   {
+    id: 0,
+    question: '⭐ How does it work?',
+    questionTl: '⭐ Paano ito gumagana?',
+    answer: `Step 1: Choose your scooter
+Pick from Honda Beat, Honda Click, or Yamaha Fazzio. Clear prices, from ₱250/day. Every rental includes helmet, phone holder, full tank, and more.
+
+Step 2: Pick your location on Google Maps
+Select exactly where you want your scooter—airport, hotel, resort, surf spot, or anywhere on the island. Most rentals don't offer this! Pin your spot and we deliver there.
+
+Step 3: Delivery and return
+Fast delivery to your chosen location. Flexible return—drop off anywhere on the island. Simple!`,
+    answerTl: `Step 1: Pumili ng scooter
+Honda Beat, Honda Click, o Yamaha Fazzio. Malinaw ang presyo, mula ₱250/araw. Kasama ang helmet, phone holder, punong tangke, at marami pa.
+
+Step 2: Piliin ang lokasyon sa Google Maps
+Kung saan mo gusto ang scooter—airport, hotel, resort, surf spot, o kahit saan sa isla. Piliin ang spot at idedeliver namin doon.
+
+Step 3: Delivery at return
+Mabilis na delivery sa napili mong lugar. Flexible ang return—i-drop off kahit saan sa isla. Simple!`,
+  },
+  {
     id: 1,
-    question: 'Do I need an international driver\'s license?',
-    questionTl: 'Kailangan ko ba ng international driver\'s license?',
-    answer: 'Yes, an international driver\'s license (IDP) or a valid Philippine driver\'s license is required. If you\'re a tourist, we highly recommend getting an IDP from your home country before traveling to the Philippines.',
-    answerTl: 'Oo, kailangan ang international driver\'s license (IDP) o valid na Philippine driver\'s license. Kung turista ka, inirerekomenda naming kumuha ng IDP sa iyong bansa bago pumunta sa Pilipinas.',
+    question: 'Is a deposit required?',
+    questionTl: 'Kailangan ba ng deposit?',
+    answer: 'Yes, a deposit is required. You can pay a deposit (1 day rent) to reserve your scooter, with the balance due on pickup. Full payment is required upon pickup if you choose the deposit option.',
+    answerTl: 'Oo, kailangan ng deposit. Pwedeng magbayad ng deposit (1 araw na upa) para mag-reserve, at ang balance ay babayaran sa pickup. Kailangan ang full payment sa pickup kung pipiliin mo ang deposit option.',
   },
   {
     id: 2,
     question: 'What happens if the scooter breaks down?',
     questionTl: 'Ano ang mangyayari kung masira ang scooter?',
-    answer: 'We provide 24/7 roadside assistance! If you experience any mechanical issues, call us immediately and we\'ll either fix it on-site or provide a replacement scooter at no extra charge. We maintain our fleet regularly to minimize breakdowns.',
-    answerTl: 'Nagbibigay kami ng 24/7 roadside assistance! Kung may problema sa makina, tumawag agad at aayusin namin o bibigyan ka ng kapalit na scooter nang libre. Regular naming ina-maintain ang aming mga scooter.',
+    answer: 'Contact us during our opening times (7:00 AM to 9:00 PM) and we will collect the scooter and provide a replacement at no extra charge. We maintain our fleet regularly to minimize breakdowns.',
+    answerTl: 'Kontakin kami sa aming opening hours (7:00 AM hanggang 9:00 PM) at kukunin namin ang scooter at bibigyan ka ng kapalit nang libre. Regular naming ina-maintain ang aming mga scooter.',
+  },
+  {
+    id: 14,
+    question: '🪖 Is safety equipment included?',
+    questionTl: '🪖 Kasama ba ang safety equipment?',
+    answer: 'Free helmets and phone holders are included with every rental.',
+    answerTl: 'Libreng helmet at phone holder kasama sa bawat upa.',
+  },
+  {
+    id: 15,
+    question: '📍 Do you offer pickup and delivery?',
+    questionTl: '📍 Nag-aalok ba kayo ng pickup at delivery?',
+    answer: 'We offer islandwide pickup and delivery including airport and ferry port.',
+    answerTl: 'Nag-aalok kami ng islandwide pickup at delivery kasama ang airport at ferry port.',
   },
   {
     id: 3,
@@ -36,10 +71,10 @@ const faqs: FAQ[] = [
   },
   {
     id: 4,
-    question: 'Is insurance included in the rental?',
-    questionTl: 'Kasama ba ang insurance sa upa?',
-    answer: 'Basic coverage is included for mechanical failures. However, we strongly recommend adding our Premium Insurance Package (₱200/day) which covers accidents, theft, and damages. You\'re responsible for damages without insurance.',
-    answerTl: 'Kasama ang basic coverage para sa mechanical failures. Pero inirerekomenda namin ang Premium Insurance Package (₱200/bawat araw) na sumasaklaw sa aksidente, pagnanakaw, at damages. Ikaw ang responsable sa damages kung walang insurance.',
+    question: 'What insurance options are available?',
+    questionTl: 'Anong insurance options ang available?',
+    answer: 'We offer 2 insurance options: Basic at ₱50/day and Premium at ₱100/day. Both provide coverage for accidents and damages. Premium offers higher coverage limits. We strongly recommend at least Basic insurance.',
+    answerTl: 'May 2 options: Basic na ₱50/araw at Premium na ₱100/araw. Parehong may coverage para sa aksidente at damages. Mas mataas ang coverage ng Premium. Inirerekomenda naming ang kahit Basic insurance.',
   },
   {
     id: 5,
@@ -59,8 +94,8 @@ const faqs: FAQ[] = [
     id: 7,
     question: 'What is your fuel policy?',
     questionTl: 'Ano ang fuel policy ninyo?',
-    answer: 'We provide the scooter with a full tank of gas. You should return it with a full tank as well. If you return it with less fuel, we\'ll charge ₱100 per liter for the missing fuel. Gas stations are widely available in General Luna and other towns.',
-    answerTl: 'Punong tangke ang binibigay namin. Dapat punong tangke din ang ibalik. Kung kulang ang gas, singil namin ay ₱100 bawat litro. Maraming gas station sa General Luna at ibang bayan.',
+    answer: 'We provide the scooter with a full tank of gas. You should return it with a full tank as well. If you return it with fuel bars missing on the fuel gauge, we charge ₱70 per bar missing. Gas stations are widely available in General Luna and other towns.',
+    answerTl: 'Punong tangke ang binibigay namin. Dapat punong tangke din ang ibalik. Kung may bar na kulang sa fuel gauge, singil namin ay ₱70 bawat bar. Maraming gas station sa General Luna at ibang bayan.',
   },
   {
     id: 8,
@@ -80,8 +115,8 @@ const faqs: FAQ[] = [
     id: 10,
     question: 'What are your operating hours?',
     questionTl: 'Ano ang inyong operating hours?',
-    answer: 'We\'re open 7 days a week from 7:00 AM to 9:00 PM. Pickups and returns can be arranged within these hours. For emergencies or roadside assistance, we\'re available 24/7 via WhatsApp at +63 945 701 4440.',
-    answerTl: 'Bukas kami 7 days a week mula 7:00 AM hanggang 9:00 PM. Pwedeng mag-pickup at mag-return sa loob ng oras na ito. Para sa emergency o roadside assistance, available kami 24/7 sa WhatsApp: +63 945 701 4440.',
+    answer: 'We\'re open 7 days a week from 7:00 AM to 9:00 PM. Pickups and returns can be arranged within these hours. For breakdowns, contact us during opening times and we will collect the scooter and provide a replacement. WhatsApp: +63 945 701 4440.',
+    answerTl: 'Bukas kami 7 days a week mula 7:00 AM hanggang 9:00 PM. Pwedeng mag-pickup at mag-return sa loob ng oras na ito. Para sa breakdown, kontakin kami sa opening times at kukunin namin ang scooter at bibigyan ng kapalit. WhatsApp: +63 945 701 4440.',
   },
   {
     id: 11,
@@ -96,6 +131,13 @@ const faqs: FAQ[] = [
     questionTl: 'May security deposit ba?',
     answer: 'Yes, we require a ₱5,000 security deposit (cash or hold on credit card) at pickup. This covers potential damages or violations. The deposit is fully refundable upon returning the scooter in good condition. With Premium Insurance, the deposit is reduced to ₱2,000.',
     answerTl: 'Oo, kailangan ng ₱5,000 security deposit (cash o hold sa credit card) sa pickup. Ito ay para sa damages o violations. Fully refundable ito kung maibalik ang scooter na maayos. Sa Premium Insurance, ang deposit ay ₱2,000 na lang.',
+  },
+  {
+    id: 13,
+    question: 'Do I need an international driver\'s license?',
+    questionTl: 'Kailangan ko ba ng international driver\'s license?',
+    answer: 'Yes, an international driver\'s license (IDP) or a valid Philippine driver\'s license is required. If you\'re a tourist, we highly recommend getting an IDP from your home country before traveling to the Philippines.',
+    answerTl: 'Oo, kailangan ang international driver\'s license (IDP) o valid na Philippine driver\'s license. Kung turista ka, inirerekomenda naming kumuha ng IDP sa iyong bansa bago pumunta sa Pilipinas.',
   },
 ];
 
@@ -161,7 +203,7 @@ export function FAQSection() {
                 />
               </button>
               {openId === faq.id && (
-                <div className="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-200 dark:border-slate-700 pt-4">
+                <div className="px-6 pb-5 text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-200 dark:border-slate-700 pt-4 whitespace-pre-line">
                   {language === 'tl' ? faq.answerTl : faq.answer}
                 </div>
               )}
