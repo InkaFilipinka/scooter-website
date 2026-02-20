@@ -5,6 +5,7 @@ import { Navigation } from "@/components/navigation";
 import { LanguageProvider } from "@/contexts/language-context";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { GoogleAdsTag } from "@/components/google-ads-tag";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -77,6 +78,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <GoogleAnalytics />
+        <GoogleAdsTag />
         <ThemeProvider>
           <LanguageProvider>
             <Navigation />
