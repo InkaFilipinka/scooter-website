@@ -66,7 +66,9 @@ export default function AdminDashboard() {
   const [isLoadingLinks, setIsLoadingLinks] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [poolAvailable, setPoolAvailable] = useState<number>(4);
+  const [poolDraft, setPoolDraft] = useState<number>(4);
   const [isSavingPool, setIsSavingPool] = useState(false);
+  const [poolSaved, setPoolSaved] = useState(false);
   const router = useRouter();
 
   // Payment link form state
@@ -91,7 +93,12 @@ export default function AdminDashboard() {
     // Load pool
     fetch("/api/pool")
       .then((r) => r.json())
-      .then((data) => typeof data.available === "number" && setPoolAvailable(data.available))
+      .then((data) => {
+        if (typeof data.available === "number") {
+          setPoolAvailable(data.available);
+          setPoolDraft(data.available);
+        }
+      })
       .catch(() => {});
   }, [router]);
 
@@ -145,19 +152,25 @@ export default function AdminDashboard() {
     }
   };
 
-  const updatePool = async (value: number) => {
-    setPoolAvailable(value);
+  const savePool = async () => {
     setIsSavingPool(true);
+    setPoolSaved(false);
     try {
       const res = await fetch("/api/pool", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ available: value }),
+        body: JSON.stringify({ available: poolDraft }),
       });
       if (!res.ok) throw new Error("Failed to update");
+      setPoolAvailable(poolDraft);
+      setPoolSaved(true);
+      setTimeout(() => setPoolSaved(false), 2000);
     } catch (err) {
       console.error("Failed to update pool:", err);
-      fetch("/api/pool").then((r) => r.json()).then((d) => setPoolAvailable(d.available ?? 4));
+      fetch("/api/pool").then((r) => r.json()).then((d) => {
+        setPoolAvailable(d.available ?? 4);
+        setPoolDraft(d.available ?? 4);
+      });
     } finally {
       setIsSavingPool(false);
     }
@@ -352,22 +365,38 @@ export default function AdminDashboard() {
                 <Bike className="w-5 h-5 text-teal-600" />
                 <h2 className="text-lg font-bold text-slate-900">Available Scooters</h2>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <input
                   type="range"
                   min={0}
                   max={4}
                   step={1}
-                  value={poolAvailable}
-                  onChange={(e) => updatePool(Number(e.target.value))}
-                  className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                  value={poolDraft}
+                  onChange={(e) => setPoolDraft(Number(e.target.value))}
+                  className="flex-1 min-w-[120px] h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
                 />
-                <span className="text-2xl font-bold text-teal-600 min-w-[3rem]">{poolAvailable}</span>
+                <span className="text-2xl font-bold text-teal-600 min-w-[3rem]">{poolDraft}</span>
                 <span className="text-slate-600 text-sm">scooters available</span>
-                {isSavingPool && <Loader2 className="w-5 h-5 animate-spin text-slate-400" />}
+                <button
+                  type="button"
+                  onClick={savePool}
+                  disabled={isSavingPool || poolDraft === poolAvailable}
+                  className="px-4 py-2 bg-teal-500 hover:bg-teal-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                >
+                  {isSavingPool ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : poolSaved ? (
+                    "✓ Saved"
+                  ) : (
+                    "Save"
+                  )}
+                </button>
               </div>
               <p className="text-xs text-slate-500 mt-2">
-                Adjust when scooters are rented or returned. New bookings auto-decrement this value.
+                Adjust when scooters are rented or returned. Click Save to update. New bookings auto-decrement this value.
               </p>
             </div>
 
