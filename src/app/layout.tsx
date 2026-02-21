@@ -9,7 +9,8 @@ import { GoogleAdsTag } from "@/components/google-ads-tag";
 
 const inter = Inter({
   subsets: ["latin"],
-  display: 'swap',
+  weight: ["400", "600", "700"],
+  display: "swap",
   preload: true,
 });
 

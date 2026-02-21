@@ -895,7 +895,7 @@ ${addOnLinesForEmail}
           {/* <span className="flex items-center gap-1">
             📱 GCash
           </span> */}
-          <span className="flex items-center gap-1 text-teal-600 font-semibold">
+          <span className="flex items-center gap-1 text-teal-700 font-semibold">
             🏪 Pay at Pickup
           </span>
         </div>
@@ -917,7 +917,7 @@ ${addOnLinesForEmail}
             <span>30-Min Lesson</span>
           </div>
         </div>
-        <div className="text-xs text-teal-600 mt-2">
+        <div className="text-xs text-teal-700 mt-2">
           + FREE customer pick up or deliver to our shop in General Luna area!
         </div>
       </div>
@@ -1093,7 +1093,7 @@ ${addOnLinesForEmail}
       {/* Pickup Time Slider */}
       <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
         <label htmlFor="pickupTime" className="block text-sm font-semibold mb-3 dark:text-slate-700 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-teal-600" />
+          <Clock className="w-4 h-4 text-teal-700" />
           {formData.delivery === "yes" ? "Delivery Time" : "Pickup Time"}
         </label>
 
@@ -1152,7 +1152,7 @@ ${addOnLinesForEmail}
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div className="font-semibold text-slate-800">Premium</div>
-                  <div className="font-bold text-teal-600">₱100/day</div>
+                  <div className="font-bold text-teal-700">₱100/day</div>
                 </div>
                 <div className="text-sm text-slate-600 mt-1">
                   Higher coverage
@@ -1178,7 +1178,7 @@ ${addOnLinesForEmail}
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <div className="font-semibold text-slate-800">Basic</div>
-                  <div className="font-bold text-teal-600">₱50/day</div>
+                  <div className="font-bold text-teal-700">₱50/day</div>
                 </div>
                 <div className="text-sm text-slate-600 mt-1">
                   Standard coverage
@@ -1270,7 +1270,7 @@ ${addOnLinesForEmail}
             type="button"
             onClick={() => setIsMapOpen(true)}
             aria-label="Open map to select delivery location"
-            className="w-full px-4 py-3 border-2 border-teal-500 text-teal-600 hover:bg-teal-50 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors shadow-md"
+            className="w-full px-4 py-3 border-2 border-teal-500 text-teal-700 hover:bg-teal-50 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors shadow-md"
           >
             <MapPin className="w-5 h-5" />
             {formData.distance ? `🎯 Selected: ${formData.distance} km away` : "🗺️ Click to Select Location on Map"}
@@ -1294,7 +1294,7 @@ ${addOnLinesForEmail}
 
           {/* Pickup/Delivery Time Info */}
           <div className="text-sm text-slate-700 mt-2 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-teal-600" />
+            <Clock className="w-4 h-4 text-teal-700" />
             <span>
               {formData.delivery === "yes" ? "Delivery" : "Pickup"} at <strong className="text-teal-700">{formatTime(formData.pickupTime)}</strong>
             </span>
@@ -1306,7 +1306,7 @@ ${addOnLinesForEmail}
               <span>{getRentalDays()} days × ₱{getCurrentPricePerDay()}/day × {(formData.quantity ?? 1)} {(formData.quantity ?? 1) === 1 ? "scooter" : "scooters"}</span>
               <span className="font-semibold">₱{getRentalDays() * getCurrentPricePerDay() * (formData.quantity ?? 1)}</span>
             </div>
-            <div className="text-xs text-teal-600 mt-1">
+            <div className="text-xs text-teal-700 mt-1">
               Rate tier: {getPricingTierLabel(getRentalDays())} {getRentalDays() >= 28 && "✨"}
             </div>
           </div>
@@ -1371,7 +1371,7 @@ ${addOnLinesForEmail}
                 <span>💳</span>
                 Pay in Full Online
               </div>
-              <div className={`text-sm mt-1 ${formData.paymentOption === "full" ? "text-teal-600" : "text-slate-600"}`}>
+              <div className={`text-sm mt-1 ${formData.paymentOption === "full" ? "text-teal-700" : "text-slate-600"}`}>
                 Complete payment now - Total: ₱{calculateTotal()}
               </div>
             </div>
@@ -1396,7 +1396,7 @@ ${addOnLinesForEmail}
                   <span>🏪</span>
                   Pay at Pickup (No Payment Now)
                 </div>
-                <div className={`text-sm mt-1 ${formData.paymentOption === "pickup" ? "text-teal-600" : "text-slate-600"}`}>
+                <div className={`text-sm mt-1 ${formData.paymentOption === "pickup" ? "text-teal-700" : "text-slate-600"}`}>
                   Reserve now, pay ₱{calculateTotal()} at {formatTime(formData.pickupTime)} when you pick up
                   <br />
                   <span className="text-xs">Cash or GCash accepted at pickup</span>
@@ -1423,7 +1423,7 @@ ${addOnLinesForEmail}
                 <span>💵</span>
                 Pay Deposit to Reserve
               </div>
-              <div className={`text-sm mt-1 ${formData.paymentOption === "deposit" ? "text-teal-600" : "text-slate-600"}`}>
+              <div className={`text-sm mt-1 ${formData.paymentOption === "deposit" ? "text-teal-700" : "text-slate-600"}`}>
                 Reserve now with deposit (1 day rent): ₱{calculateDeposit()}
                 <br />
                 <span className="text-xs">Balance of ₱{Math.round(calculateTotal() - calculateDeposit())} due on pickup. Cash or GCash only</span>
@@ -1471,7 +1471,7 @@ ${addOnLinesForEmail}
                   <span>Pay at pickup:</span>
                   <span>₱{calculateTotal()}</span>
                 </div>
-                <div className="mt-2 pt-2 border-t border-teal-200 text-xs text-teal-600">
+                <div className="mt-2 pt-2 border-t border-teal-200 text-xs text-teal-700">
                   Pay in Cash or GCash when you pick up your scooter at our store
                 </div>
               </>
@@ -1618,7 +1618,7 @@ ${addOnLinesForEmail}
                     <>
                       <div className="flex justify-between">
                         <span>Deposit Paid:</span>
-                        <span className="font-medium text-green-600">₱{calculateDeposit()}</span>
+                        <span className="font-medium text-green-700">₱{calculateDeposit()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Balance Due:</span>
@@ -1628,7 +1628,7 @@ ${addOnLinesForEmail}
                   ) : (
                     <div className="flex justify-between">
                       <span>Total:</span>
-                      <span className="font-medium text-green-600">₱{calculateTotal()}</span>
+                      <span className="font-medium text-green-700">₱{calculateTotal()}</span>
                     </div>
                   )}
                 </div>

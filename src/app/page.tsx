@@ -101,6 +101,7 @@ export default function Home() {
             playsInline
             preload="metadata"
             poster="/images/hero-poster.webp"
+            {...({ fetchPriority: "high" } as React.VideoHTMLAttributes<HTMLVideoElement>)}
           >
             <source src="/videos/hero.webm" type="video/webm" />
             <source src="/videos/hero.mp4" type="video/mp4" />
@@ -116,7 +117,7 @@ export default function Home() {
             {t('hero.subtitle')}
           </p>
           <p className="text-lg md:text-xl mb-8 flex items-center justify-center gap-2 text-slate-600 dark:text-slate-900">
-            <MapPin className="w-5 h-5 text-teal-600 dark:text-slate-900" />
+            <MapPin className="w-5 h-5 text-teal-700 dark:text-slate-900" />
             {t('hero.serving')}
           </p>
           <a
@@ -254,7 +255,7 @@ export default function Home() {
                   onClick={(e) => handleContactClick(e, 'whatsapp_click', 'Contact Section', 'https://wa.me/639457014440?text=Hi%20Palm%20Riders!%20I%27d%20like%20to%20rent%20a%20scooter', true)}
                   className="bg-white text-slate-900 rounded-xl p-6 hover:shadow-2xl transition-all transform hover:scale-[1.02] group flex items-center gap-4"
                 >
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-600 transition-colors">
+                  <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-700 transition-colors">
                     <svg
                       className="w-9 h-9 text-white"
                       fill="currentColor"
@@ -266,7 +267,7 @@ export default function Home() {
                   <div className="text-left">
                     <h3 className="text-xl font-bold mb-1">{t('contact.whatsapp')}</h3>
                     <p className="text-slate-600 text-sm mb-1">{t('contact.whatsappDesc')}</p>
-                    <span className="text-lg font-semibold text-green-600">+63 945 701 4440</span>
+                    <span className="text-lg font-semibold text-green-700">+63 945 701 4440</span>
                   </div>
                 </a>
 

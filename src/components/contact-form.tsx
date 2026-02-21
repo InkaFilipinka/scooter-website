@@ -206,7 +206,7 @@ export function ContactForm() {
         {/* Phone (Optional) */}
         <div>
           <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1">
-            Phone / WhatsApp <span className="text-slate-400">(optional)</span>
+            Phone / WhatsApp <span className="text-slate-500">(optional)</span>
           </label>
           <input
             type="tel"
