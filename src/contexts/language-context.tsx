@@ -97,6 +97,7 @@ const translations: Record<string, Record<Language, string>> = {
   'reviews.happyRiders': { en: 'Happy Riders', tl: 'Masayang Riders' },
   'reviews.countries': { en: 'Countries', tl: 'mga Bansa' },
   'reviews.satisfaction': { en: 'Satisfaction', tl: 'Kasiyahan' },
+  'reviews.viewOnGoogle': { en: 'View on Google', tl: 'Tingnan sa Google' },
   // FAQ
   'faq.title': { en: 'Frequently Asked Questions', tl: 'Mga Madalas Itanong' },
   'faq.subtitle': { en: 'Everything you need to know about renting with us', tl: 'Lahat ng kailangan mong malaman tungkol sa pag-upa' },

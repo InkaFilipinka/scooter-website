@@ -1,7 +1,10 @@
 "use client";
 
-import { Star } from 'lucide-react';
+import { Star, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
+import { GoogleReviewsWidget } from '@/components/google-reviews-widget';
+
+const googleReviewsUrl = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL;
 
 interface Review {
   id: number;
@@ -187,30 +190,37 @@ export function ReviewsSection() {
             {t('reviews.subtitle')}
           </p>
 
-          {/* Average Rating */}
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-6 h-6 ${
-                    i < Math.floor(averageRating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-slate-300 dark:text-slate-600'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-              {averageRating.toFixed(1)}
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {t('reviews.basedOn')}
-          </p>
+          {/* Average Rating - only when using static reviews */}
+          {!process.env.NEXT_PUBLIC_ELFSIGHT_WIDGET_ID && (
+            <>
+              <div className="flex items-center justify-center gap-4 mb-2">
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-6 h-6 ${
+                        i < Math.floor(averageRating)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-slate-300 dark:text-slate-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+                  {averageRating.toFixed(1)}
+                </span>
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {t('reviews.basedOn')}
+              </p>
+            </>
+          )}
         </div>
 
-        {/* Reviews Grid */}
+        {/* Live Google Reviews Widget (when configured) or static reviews fallback */}
+        {process.env.NEXT_PUBLIC_ELFSIGHT_WIDGET_ID ? (
+          <GoogleReviewsWidget />
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reviews.map((review) => (
             <div
@@ -250,6 +260,22 @@ export function ReviewsSection() {
             </div>
           ))}
         </div>
+        )}
+
+        {/* View on Google link - show when GBP URL is set (widget or static) */}
+        {googleReviewsUrl && (
+          <div className="mt-8 text-center">
+            <a
+              href={googleReviewsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-teal-700 dark:text-teal-400 font-semibold hover:underline"
+            >
+              {t('reviews.viewOnGoogle')}
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -36,6 +36,13 @@ Create a `.env.local` file in the root directory:
 # Google Maps API Key
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
+# Google Reviews widget (Elfsight) - optional, loads when section is in view
+# Get your widget ID: https://elfsight.com/google-reviews-widget/
+# NEXT_PUBLIC_ELFSIGHT_WIDGET_ID=elfsight-app-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+# Google Business Profile URL - for "View on Google" link (from your GBP dashboard)
+# NEXT_PUBLIC_GOOGLE_REVIEWS_URL=https://g.page/your-business or https://www.google.com/maps/place/...
+
 # WhatsApp Business Cloud API (Meta)
 WHATSAPP_BUSINESS_PHONE_ID=your_phone_number_id
 WHATSAPP_ACCESS_TOKEN=your_access_token
