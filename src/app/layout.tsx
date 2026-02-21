@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     apple: '/favicon.svg',
   },
   description:
-    "Palm Riders is a modern scooter and motorbike rental in Siargao Del Norte, offering convenient islandwide delivery. Whether you want to rent or hire a scooter in General Luna, Dapa or anywhere in Siargao, simply book online and choose your pickup location on our interactive map. We deliver directly to your hotel, resort, airport or ferry terminal for a smooth and hassle-free experience. We provide well-maintained Honda Beat, Honda Click and Yamaha Fazzio scooters with flexible daily, weekly and long-term rental options and transparent pricing. Secure payments are available with GCash, credit cards, PayPal and cryptocurrency. Every rental includes free helmets, phone holders and basic insurance so you can explore Siargao safely and with confidence.",
+    "Siargao scooter rental with free helmet, insurance and no deposit. Fast online booking in 1–3 minutes with islandwide delivery in General Luna and Siargao Del Norte.",
   keywords: [
     "scooter rental siargao",
     "scooter rental general luna",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     siteName: "Palm Riders Scooter Rentals",
     title: "Scooter Rental in Siargao | General Luna",
     description:
-      "Palm Riders is a modern scooter and motorbike rental in Siargao Del Norte, offering convenient islandwide delivery. Whether you want to rent or hire a scooter in General Luna, Dapa or anywhere in Siargao, simply book online and choose your pickup location on our interactive map. We deliver directly to your hotel, resort, airport or ferry terminal for a smooth and hassle-free experience. We provide well-maintained Honda Beat, Honda Click and Yamaha Fazzio scooters with flexible daily, weekly and long-term rental options and transparent pricing. Secure payments are available with GCash, credit cards, PayPal and cryptocurrency. Every rental includes free helmets, phone holders and basic insurance so you can explore Siargao safely and with confidence.",
+      "Siargao scooter rental with free helmet, insurance and no deposit. Fast online booking in 1–3 minutes with islandwide delivery in General Luna and Siargao Del Norte.",
     images: [
       {
         url: "/images/hero-poster.webp",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Scooter Rental in Siargao | General Luna",
     description:
-      "Palm Riders is a modern scooter and motorbike rental in Siargao Del Norte, offering convenient islandwide delivery. Whether you want to rent or hire a scooter in General Luna, Dapa or anywhere in Siargao, simply book online and choose your pickup location on our interactive map. We deliver directly to your hotel, resort, airport or ferry terminal for a smooth and hassle-free experience. We provide well-maintained Honda Beat, Honda Click and Yamaha Fazzio scooters with flexible daily, weekly and long-term rental options and transparent pricing. Secure payments are available with GCash, credit cards, PayPal and cryptocurrency. Every rental includes free helmets, phone holders and basic insurance so you can explore Siargao safely and with confidence.",
+      "Siargao scooter rental with free helmet, insurance and no deposit. Fast online booking in 1–3 minutes with islandwide delivery in General Luna and Siargao Del Norte.",
     images: ["/images/hero-poster.webp"],
   },
 };

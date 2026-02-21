@@ -34,12 +34,10 @@ export function Navigation() {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center">
-            <img
-              src="/images/logo.png"
-              alt="Palm Riders - Scooter Rental Siargao"
-              className="h-10 md:h-12 w-auto object-contain"
-            />
+          <Link href="/" className="flex items-center space-x-2 text-xl md:text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 dark:from-teal-400 dark:to-emerald-400 bg-clip-text text-transparent">
+            <span className="text-2xl">🌴</span>
+            <span>Palm Riders</span>
+            <span className="text-2xl">🛵</span>
           </Link>
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">

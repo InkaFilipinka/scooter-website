@@ -17,9 +17,9 @@ const translations: Record<string, Record<Language, string>> = {
   'nav.blog': { en: 'Blog', tl: 'Blog' },
   'nav.book': { en: 'Book Now', tl: 'Mag-book Ngayon' },
   // Hero
-  'hero.title': { en: 'Explore Siargao on Two Wheels', tl: 'Libutin ang Siargao sa Dalawang Gulong' },
-  'hero.subtitle': { en: 'The Most Convenient Scooter Rental in Siargao', tl: 'Ang Pinaka-Convenient na Scooter Rental sa Siargao' },
-  'hero.serving': { en: 'Book your scooter in minutes and select your pickup spot on Google Maps. We deliver anywhere in Siargao including General Luna, Dapa, Del Carmen and all island locations. Fast, flexible and hassle-free rentals for travelers.', tl: 'Mag-book ng scooter sa loob ng ilang minuto at piliin ang pickup spot sa Google Maps. Nagdedeliver kami kahit saan sa Siargao kasama ang General Luna, Dapa, Del Carmen at lahat ng island locations. Mabilis, flexible at walang hassle na rentals para sa mga traveler.' },
+  'hero.title': { en: 'Siargao Scooter Rentals – Explore the Island on Two Wheels', tl: 'Siargao Scooter Rentals – Libutin ang Isla sa Dalawang Gulong' },
+  'hero.subtitle': { en: 'Affordable daily & weekly scooter hire in General Luna. Delivered to any location on the island, no deposit, instant booking. Free helmet, phone holder & insurance.', tl: 'Abot-kayang arawan at lingguhang scooter hire sa General Luna. Idedeliver sa kahit anong lokasyon sa isla, walang deposit, instant booking. Libreng helmet, phone holder at insurance.' },
+  'hero.serving': { en: 'Book your scooter in minutes and select your pickup spot on Google Maps. We deliver anywhere in Siargao including General Luna, Dapa, Del Carmen and all island locations.', tl: 'Mag-book ng scooter sa loob ng ilang minuto at piliin ang pickup spot sa Google Maps. Nagdedeliver kami kahit saan sa Siargao.' },
   'hero.bookButton': { en: 'Book Your Scooter Now', tl: 'Mag-book ng Scooter Ngayon' },
   // Scooters Section
   'scooters.title': { en: 'Our Fleet', tl: 'Aming Mga Scooter' },
