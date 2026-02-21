@@ -227,7 +227,7 @@ export function FAQSection() {
             href="https://wa.me/639457014440"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-xl"
           >
             <span className="text-xl">💬</span>
             {t('faq.chatWhatsApp')}

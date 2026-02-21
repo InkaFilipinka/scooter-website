@@ -255,7 +255,7 @@ export default function Home() {
                   onClick={(e) => handleContactClick(e, 'whatsapp_click', 'Contact Section', 'https://wa.me/639457014440?text=Hi%20Palm%20Riders!%20I%27d%20like%20to%20rent%20a%20scooter', true)}
                   className="bg-white text-slate-900 rounded-xl p-6 hover:shadow-2xl transition-all transform hover:scale-[1.02] group flex items-center gap-4"
                 >
-                  <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-700 transition-colors">
+                  <div className="w-16 h-16 bg-green-700 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-800 transition-colors">
                     <svg
                       className="w-9 h-9 text-white"
                       fill="currentColor"
