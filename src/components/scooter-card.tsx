@@ -14,19 +14,19 @@ function getResponsiveImage(src: string) {
     case "/images/honda-beat.webp":
       return {
         src: "/images/honda-beat-376.webp",
-        srcSet:
-          "/images/honda-beat-376.webp 376w, /images/honda-beat-752.webp 752w, /images/honda-beat.webp 800w",
+        srcSet: "/images/honda-beat-376.webp 376w",
+        sizes: "(min-width: 1024px) 376px, (min-width: 768px) 33vw, 100vw",
       };
     case "/images/honda-click.webp":
       return {
         src: "/images/honda-click-376.webp",
-        srcSet: "/images/honda-click-376.webp 376w, /images/honda-click.webp 685w",
+        srcSet: "/images/honda-click-376.webp 376w",
+        sizes: "(min-width: 1024px) 376px, (min-width: 768px) 33vw, 100vw",
       };
     case "/images/yamaha-fazzio.webp":
       return {
         src: "/images/yamaha-fazzio-256.webp",
-        srcSet:
-          "/images/yamaha-fazzio-256.webp 256w, /images/yamaha-fazzio-512.webp 512w, /images/yamaha-fazzio.webp 800w",
+        srcSet: "/images/yamaha-fazzio-256.webp 256w",
         sizes: "(min-width: 1024px) 256px, (min-width: 768px) 256px, 50vw",
       };
     default:

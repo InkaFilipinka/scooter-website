@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { MapPicker } from "./map-picker";
-import { CryptoPaymentModal } from "./crypto-payment-modal";
-import { AddOnsModal } from "./add-ons-modal";
+import dynamic from "next/dynamic";
 import { MapPin, Clock } from "lucide-react";
+
+const MapPicker = dynamic(() => import("./map-picker").then((m) => ({ default: m.MapPicker })), { ssr: false });
+const CryptoPaymentModal = dynamic(() => import("./crypto-payment-modal").then((m) => ({ default: m.CryptoPaymentModal })), { ssr: false });
+const AddOnsModal = dynamic(() => import("./add-ons-modal").then((m) => ({ default: m.AddOnsModal })), { ssr: false });
 import emailjs from '@emailjs/browser';
 import { addOns } from "@/data/add-ons";
 import { getPricePerDay, getPricingTierLabel } from "@/data/scooter-pricing";
@@ -828,34 +830,40 @@ ${addOnLinesForEmail}
 
   return (
     <>
-      <MapPicker
-        isOpen={isMapOpen}
-        onClose={() => setIsMapOpen(false)}
-        onLocationSelect={handleLocationSelect}
-      />
-      <CryptoPaymentModal
-        isOpen={isCryptoModalOpen}
-        onClose={() => setIsCryptoModalOpen(false)}
-        bookingId={currentBookingId}
-        amount={getPaymentAmount()}
-        customerEmail={formData.email}
-        customerName={formData.name}
-        onSuccess={handleCryptoPaymentSuccess}
-        onError={(errMsg: string) => {
-          setPaymentError(errMsg);
-          setIsCryptoModalOpen(false);
-          setIsProcessingPayment(false);
-        }}
-      />
-      <AddOnsModal
-        isOpen={isAddOnsModalOpen}
-        onClose={() => {
-          setIsAddOnsModalOpen(false);
-          setPendingSubmit(false);
-        }}
-        onConfirm={handleAddOnsConfirm}
-        rentalDays={getRentalDays()}
-      />
+      {isMapOpen && (
+        <MapPicker
+          isOpen={isMapOpen}
+          onClose={() => setIsMapOpen(false)}
+          onLocationSelect={handleLocationSelect}
+        />
+      )}
+      {isCryptoModalOpen && (
+        <CryptoPaymentModal
+          isOpen={isCryptoModalOpen}
+          onClose={() => setIsCryptoModalOpen(false)}
+          bookingId={currentBookingId}
+          amount={getPaymentAmount()}
+          customerEmail={formData.email}
+          customerName={formData.name}
+          onSuccess={handleCryptoPaymentSuccess}
+          onError={(errMsg: string) => {
+            setPaymentError(errMsg);
+            setIsCryptoModalOpen(false);
+            setIsProcessingPayment(false);
+          }}
+        />
+      )}
+      {isAddOnsModalOpen && (
+        <AddOnsModal
+          isOpen={isAddOnsModalOpen}
+          onClose={() => {
+            setIsAddOnsModalOpen(false);
+            setPendingSubmit(false);
+          }}
+          onConfirm={handleAddOnsConfirm}
+          rentalDays={getRentalDays()}
+        />
+      )}
       {/* Delivery deposit requirement popup */}
       {showDeliveryDepositModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">
