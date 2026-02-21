@@ -19,18 +19,15 @@ This guide will help you set up automated email notifications for your scooter r
 ## Step 3: Create Email Templates
 
 ### Template 1: Business Notification
-1. Go to "Email Templates" → "Create New Template"
-2. Name it: "New Booking Notification"
-3. Use this template:
+**⚠️ IMPORTANT:** If your business email still shows the old short version (without add-ons, insurance, amount paid, amount left to pay), edit this template in EmailJS and **replace the entire email body** with only this line: `{{message}}` — then Save. The app sends the full content in `message`; the template must display it.
 
-**Subject:** 🛵 New Booking Request - {{booking_id}}
-
-**Body:** (use only this – the app sends the full content)
+1. Go to "Email Templates" → open your business template (Template ID used in the app)
+2. **Subject:** 🛵 New Booking Request - {{booking_id}}
+3. **Body:** Delete everything in the body and type only:
 ```
 {{message}}
 ```
-
-The app sends the complete business email (booking details, customer info, rental info, daily rate, insurance, total/amount paid/amount to pay, add-ons) in the `message` variable. Your template body should contain only `{{message}}` so the email matches the PDF.
+4. Save. The app sends the complete email (booking details, customer, rental info, daily rate, insurance, total / amount paid / amount left to pay, add-ons) in `message`.
 
 4. Save and copy the **Template ID**
 
