@@ -1109,15 +1109,6 @@ ${addOnLinesForEmail}
             onChange={handleChange}
             className="time-slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
           />
-
-          {/* Time Markers */}
-          <div className="flex justify-between mt-2 text-xs text-slate-500">
-            <span>8 AM</span>
-            <span>12 PM</span>
-            <span>4 PM</span>
-            <span>8 PM</span>
-            <span>10 PM</span>
-          </div>
         </div>
 
         <div className="text-xs text-slate-500 mt-3 text-center">
