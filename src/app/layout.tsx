@@ -21,10 +21,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon-192x192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
-    apple: '/favicon.svg',
+    apple: '/favicon-192x192.png',
   },
   description:
     "Siargao scooter rental with free helmet, insurance and no deposit. Fast online booking in 1–3 minutes with islandwide delivery in General Luna and Siargao Del Norte.",
@@ -74,8 +74,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="preload" as="image" href="/images/hero-poster.webp" />
       </head>
       <body className={inter.className}>
