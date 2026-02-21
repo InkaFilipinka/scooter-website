@@ -17,7 +17,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://siargaoscooterrentals.com'),
   title: {
-    default: "Scooter Rental in Siargao | General Luna, Siargao del Norte",
+    default: "Siargao Scooter Rental & Hire in General Luna",
     template: "%s | Scooter Rental Siargao"
   },
   icons: {
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     apple: '/favicon-192x192.png',
   },
   description:
-    "Siargao scooter rental with free helmet, insurance and no deposit. Fast online booking in 1–3 minutes with islandwide delivery in General Luna and Siargao Del Norte.",
+    "Affordable scooter rental in Siargao with fast delivery, no deposit, instant booking. Helmet, phone holder & insurance included. Book in 1–3 minutes. General Luna, Dapa, Del Carmen.",
   keywords: [
     "scooter rental siargao",
     "scooter rental general luna",
@@ -45,9 +45,9 @@ export const metadata: Metadata = {
     locale: "en_PH",
     url: "https://siargaoscooterrentals.com",
     siteName: "Palm Riders Scooter Rentals",
-    title: "Scooter Rental in Siargao | General Luna",
+    title: "Siargao Scooter Rental & Hire in General Luna",
     description:
-      "Siargao scooter rental with free helmet, insurance and no deposit. Fast online booking in 1–3 minutes with islandwide delivery in General Luna and Siargao Del Norte.",
+      "Affordable scooter rental in Siargao with fast delivery, no deposit, instant booking. Helmet, phone holder & insurance included. General Luna, Dapa, Del Carmen.",
     images: [
       {
         url: "/images/hero-poster.webp",
@@ -59,9 +59,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Scooter Rental in Siargao | General Luna",
+    title: "Siargao Scooter Rental & Hire in General Luna",
     description:
-      "Siargao scooter rental with free helmet, insurance and no deposit. Fast online booking in 1–3 minutes with islandwide delivery in General Luna and Siargao Del Norte.",
+      "Affordable scooter rental in Siargao with fast delivery, no deposit, instant booking. Helmet, phone holder & insurance included. General Luna, Dapa, Del Carmen.",
     images: ["/images/hero-poster.webp"],
   },
 };

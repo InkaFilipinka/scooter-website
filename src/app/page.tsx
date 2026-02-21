@@ -109,24 +109,53 @@ export default function Home() {
 </div>
 
         {/* Hero Text Below Image */}
-        <div className="container mx-auto px-4 py-12 md:py-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-slate-800 dark:text-slate-900">
-            {t('hero.title')}
-          </h1>
-          <p className="text-xl md:text-2xl mb-4 max-w-3xl mx-auto text-slate-700 dark:text-slate-900">
-            {t('hero.subtitle')}
-          </p>
-          <p className="text-lg md:text-xl mb-8 flex items-center justify-center gap-2 text-slate-600 dark:text-slate-900">
-            <MapPin className="w-5 h-5 text-teal-700 dark:text-slate-900" />
-            {t('hero.serving')}
-          </p>
-          <a
-            href="#book"
-            className="inline-flex items-center gap-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold py-4 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg"
-          >
-            <span>🏝️</span>
-            {t('hero.bookButton')}
-          </a>
+        <div className="container mx-auto px-4 py-12 md:py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* H1 */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 dark:from-teal-400 dark:via-emerald-400 dark:to-teal-500 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {t('hero.title')}
+            </h1>
+            {/* Subheadline */}
+            <p className="text-lg md:text-xl font-semibold text-slate-700 dark:text-slate-200 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+              {t('hero.subheadline')}
+            </p>
+            {/* Content cards */}
+            <div className="grid md:grid-cols-2 gap-4 mb-10 text-left">
+              <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 hover:shadow-xl transition-shadow">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center">
+                    <Bike className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-2 text-sm uppercase tracking-wide text-teal-700 dark:text-teal-400">{t('hero.whatYouGet')}</h2>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                      {t('hero.coreBenefits')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-[450ms] hover:shadow-xl transition-shadow">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-2 text-sm uppercase tracking-wide text-teal-700 dark:text-teal-400">{t('hero.bookDelivery')}</h2>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                      {t('hero.convenience')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <a
+              href="#book"
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold py-4 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500"
+            >
+              <span>🏝️</span>
+              {t('hero.bookButton')}
+            </a>
+          </div>
         </div>
       </section>
 
