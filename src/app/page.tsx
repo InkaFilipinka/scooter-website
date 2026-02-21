@@ -116,7 +116,7 @@ export default function Home() {
               {t('hero.title')}
             </h1>
             {/* Subheadline */}
-            <p className="text-lg md:text-xl font-semibold text-slate-700 dark:text-slate-200 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+            <p className="text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
               {t('hero.subheadline')}
             </p>
             {/* Content cards */}
