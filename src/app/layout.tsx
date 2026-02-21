@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-192x192.png', type: 'image/png', sizes: '192x192' },
     ],
     apple: '/favicon.svg',
   },
@@ -74,6 +75,7 @@ export default function RootLayout({
     <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
         <link rel="preload" as="image" href="/images/hero-poster.webp" />
       </head>
       <body className={inter.className}>

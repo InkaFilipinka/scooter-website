@@ -135,6 +135,16 @@ export function ReviewsSection() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Palm Riders",
+    "url": "https://siargaoscooterrentals.com",
+    "telephone": "+639457014440",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Blue Corner House, Barangay Pablacion 5",
+      "addressLocality": "General Luna",
+      "postalCode": "8419",
+      "addressRegion": "Surigao del Norte",
+      "addressCountry": "PH"
+    },
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": averageRating.toFixed(1),
