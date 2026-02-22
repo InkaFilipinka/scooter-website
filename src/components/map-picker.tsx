@@ -407,7 +407,7 @@ export function MapPicker({ onLocationSelect, isOpen, onClose }: MapPickerProps)
                 </div>
                 {distance > 0 && !calculating && (
                   <div className="text-sm text-slate-600">
-                    Delivery cost: ₱{Math.round(distance * 6.5 * 2)} (round trip)
+                    Delivery cost: ₱{Math.round(distance * 12.5 * 2)} (round trip)
                   </div>
                 )}
               </div>

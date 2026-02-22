@@ -35,7 +35,7 @@ const translations: Record<string, Record<Language, string>> = {
   'services.airport': { en: 'Airport Pickup & Drop-off', tl: 'Airport Pickup at Drop-off' },
   'services.airportDesc': { en: "We'll meet you at Siargao Airport and handle the drop-off when you leave. No hassle, just ride!", tl: 'Sasalubungin ka namin sa Siargao Airport at kami na ang mag-drop-off pag-alis mo. Walang hassle!' },
   'services.delivery': { en: 'Island-wide Delivery', tl: 'Delivery sa Buong Isla' },
-  'services.deliveryDesc': { en: 'Delivery and pickup service available at 6.5 pesos per kilometer. We come to you anywhere in Siargao del Norte - General Luna, Dapa, Del Carmen and beyond!', tl: 'May delivery at pickup service sa 6.5 pesos bawat kilometro. Pupuntahan ka namin kahit saan sa Siargao del Norte - General Luna, Dapa, Del Carmen at iba pa!' },
+  'services.deliveryDesc': { en: 'Delivery and pickup service available at 12.5 pesos per kilometer. We come to you anywhere in Siargao del Norte - General Luna, Dapa, Del Carmen and beyond!', tl: 'May delivery at pickup service sa 12.5 pesos bawat kilometro. Pupuntahan ka namin kahit saan sa Siargao del Norte - General Luna, Dapa, Del Carmen at iba pa!' },
   'services.fleet': { en: 'Well-Maintained Fleet', tl: 'Maayos na Mga Scooter' },
   'services.fleetDesc': { en: 'All our scooters are regularly serviced and in excellent condition for your safe journey around the island.', tl: 'Lahat ng aming mga scooter ay regular na siniservisyo at nasa magandang kondisyon para sa iyong ligtas na biyahe sa isla.' },
   // Booking Form
@@ -47,7 +47,7 @@ const translations: Record<string, Record<Language, string>> = {
   'booking.selectScooter': { en: 'Select a scooter', tl: 'Pumili ng scooter' },
   'booking.startDate': { en: 'Start Date', tl: 'Petsa ng Simula' },
   'booking.endDate': { en: 'End Date', tl: 'Petsa ng Katapusan' },
-  'booking.delivery': { en: 'Need Delivery Service for 6.5 PHP per km?', tl: 'Kailangan ba ng Delivery Service (6.5 PHP bawat km)?' },
+  'booking.delivery': { en: 'Need Delivery Service for 12.5 PHP per km?', tl: 'Kailangan ba ng Delivery Service (12.5 PHP bawat km)?' },
   'booking.deliveryNo': { en: "No, I'll pick it up from Palm Riders", tl: 'Hindi, kukunin ko sa Palm Riders' },
   'booking.deliveryYes': { en: 'Yes', tl: 'Oo' },
   'booking.surfRack': { en: 'Add Surf Rack? (FREE!)', tl: 'Magdagdag ng Surf Rack? (LIBRE!)' },
@@ -71,7 +71,7 @@ const translations: Record<string, Record<Language, string>> = {
   'pricing.daily': { en: 'Daily Rental Rates', tl: 'Presyo ng Pag-upa' },
   'pricing.dailyAmount': { en: 'From 250 pesos per day', tl: 'Mula 250 pesos bawat araw' },
   'pricing.deliveryService': { en: 'Delivery Service', tl: 'Delivery Service' },
-  'pricing.deliveryAmount': { en: '6.5 pesos per kilometer', tl: '6.5 pesos bawat kilometro' },
+  'pricing.deliveryAmount': { en: '12.5 pesos per kilometer', tl: '12.5 pesos bawat kilometro' },
   // Booking
   'booking.weAccept': { en: 'We Accept', tl: 'Tumatanggap Kami' },
   'booking.subtitle': { en: "Fill out the form below and we'll get back to you shortly", tl: 'Punan ang form at babalikan ka namin' },
